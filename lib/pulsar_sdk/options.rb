@@ -1,0 +1,5 @@
+require 'pulsar_sdk/options/base'
+require 'pulsar_sdk/options/client'
+require 'pulsar_sdk/options/consumer'
+require 'pulsar_sdk/options/producer'
+require 'pulsar_sdk/options/reader'
