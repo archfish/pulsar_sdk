@@ -37,6 +37,8 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
   - [ ] Topic lookup
   - [ ] Partitioned topics discovery
 - [ ] Log Optimization
+- [ ] Connection pool
 - [ ] Unit Test
+- [x] Thread safe
 
 [1]: https://github.com/apache/pulsar/wiki/PIP-26%3A-Delayed-Message-Delivery "PIP 26: Delayed Message Delivery"
