@@ -1,23 +1,27 @@
 module PulsarSdk
   class Client
-    attr_reader :conn
+    attr_reader :conn, :lookup_service
 
     def initialize(opts)
       raise "opts expected a PulsarSdk::Options::Client got #{opts.class}" unless opts.is_a?(PulsarSdk::Options::Client)
 
-      # FIXME should use connection pool
-      @conn = PulsarSdk::Connection.new(opts.url)
-      @conn.connection_timeout = opts.connection_timeout
-      @conn.operation_timeout = opts.operation_timeout
-      @conn.start
+      @opts = opts
 
-      @request_id = 0
+      # FIXME should use connection pool
+      @conn = establish(opts.url)
+
       @producer_id = 0
       @consumer_id = 0
+
+      @lookup_service = ::PulsarSdk::Protocol::Lookup.new(self, opts.url)
     end
 
-    def new_request_id
-      @request_id += 1
+    def establish(proxy_addr, broker_addr = nil)
+      conn = PulsarSdk::Connection.new(broker_addr.nil? ? proxy_addr : broker_addr)
+      @opts.connection_timeout && conn.connection_timeout = @opts.connection_timeout
+      @opts.operation_timeout && conn.operation_timeout = @opts.operation_timeout
+      conn.start
+      conn
     end
 
     def new_producer_id
@@ -26,6 +30,12 @@ module PulsarSdk
 
     def new_consumer_id
       @consumer_id += 1
+    end
+
+    def request(broker_addr, proxy_addr, cmd)
+      conn = establish(broker_addr, proxy_addr)
+
+      conn.sync_request(cmd)
     end
 
     def close
@@ -57,10 +67,5 @@ module PulsarSdk
     def topic_partitions(topic)
 
     end
-
-    def lookup
-
-    end
-
   end
 end

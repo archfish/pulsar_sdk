@@ -18,12 +18,22 @@ module PulsarSdk
           self.lookupTopicResponse.request_id
         when typeof_get_last_message_id_response?
           self.getLastMessageIdResponse.request_id
+        when typeof_lookup?
+          self.lookupTopic.request_id
+        when typeof_connect?
+        when typeof_producer?
+        else
+          puts "WARN: can't get request_id for #{self.inspect}"
         end
       end
 
       def get_consumer_id
-        return unless typeof_message?
-        message.consumer_id
+        case
+        when typeof_message?
+          self.message.consumer_id
+        else
+          puts "WARN: can't get consumer_id for #{self.inspect}"
+        end
       end
     end
   end

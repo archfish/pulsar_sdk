@@ -1,6 +1,6 @@
 module PulsarSdk
   module Tweaks
-    class WaitQueue
+    class WaitMap
       def initialize
         @mutex = Mutex.new
         @responses = {}
@@ -22,17 +22,18 @@ module PulsarSdk
         end
       end
 
+      # 不会删除元素
       def find(id)
         @mutex.synchronize do
           @responses[id]
         end
       end
 
-      def fetch(id, timeout = nil)
+      def delete(id, timeout = nil)
         mutex, signal = []
 
         @mutex.synchronize do
-          return @responses[id] if @responses.has_key?(id)
+          return @responses.delete(id) if @responses.has_key?(id)
 
           @wait[id] ||= [Mutex.new, ConditionVariable.new]
           mutex, signal = @wait[id]
@@ -52,7 +53,7 @@ module PulsarSdk
         end
 
         @mutex.synchronize do
-          @responses[id]
+          @responses.delete id
         end
       end
     end
