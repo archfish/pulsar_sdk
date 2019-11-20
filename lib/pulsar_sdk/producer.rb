@@ -5,7 +5,8 @@ module PulsarSdk
       raise "opts expected a PulsarSdk::Options::Producer got #{opts.class}" unless opts.is_a?(PulsarSdk::Options::Producer)
 
       @client = client
-      @producer_id = client.new_producer_id
+      @conn = @client.conn
+      @producer_id = @client.new_producer_id
       @producer_name = [opts.name, @producer_id].join('.')
       @receipt_queue = ReceiptQueue.new
 
@@ -24,11 +25,11 @@ module PulsarSdk
 
     def set_handler!
       handler = Proc.new { |send_receipt| @receipt_queue.add(send_receipt) }
-      @client.conn.producer_handlers.add(@producer_id, handler)
+      @conn.producer_handlers.add(@producer_id, handler)
     end
 
     def remove_handler!
-      @client.conn.producer_handlers.del(@producer_id)
+      @conn.producer_handlers.del(@producer_id)
       true
     end
 
@@ -97,15 +98,15 @@ module PulsarSdk
 
     private
     def async_command(cmd)
-      @client.conn.async_command(cmd)
+      @conn.async_command(cmd)
     end
 
     def sync_command(cmd)
-      @client.conn.sync_command(cmd)
+      @conn.sync_command(cmd)
     end
 
     def send_message(frame)
-      @client.conn.write(frame)
+      @conn.write(frame)
     end
 
     def new_request_id

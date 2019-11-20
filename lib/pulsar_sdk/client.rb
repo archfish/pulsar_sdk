@@ -57,5 +57,10 @@ module PulsarSdk
     def topic_partitions(topic)
 
     end
+
+    def lookup
+
+    end
+
   end
 end

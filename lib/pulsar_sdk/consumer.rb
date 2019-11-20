@@ -5,7 +5,8 @@ module PulsarSdk
       raise "opts expected a PulsarSdk::Options::Consumer got #{opts.class}" unless opts.is_a?(PulsarSdk::Options::Consumer)
 
       @client = client
-      @consumer_id = client.new_consumer_id
+      @conn = @client.conn
+      @consumer_id = @client.new_consumer_id
       @consumer_name = opts.name
       @subscription_name = opts.subscription_name
       @topic = opts.topic
@@ -29,11 +30,11 @@ module PulsarSdk
 
     def set_handler!
       handler = Proc.new { |cmd, meta_and_payload| @received_message.add(cmd, meta_and_payload) }
-      @client.conn.consumer_handlers.add(@consumer_id, handler)
+      @conn.consumer_handlers.add(@consumer_id, handler)
     end
 
     def remove_handler!
-      @client.conn.consumer_handlers.del(@consumer_id)
+      @conn.consumer_handlers.del(@consumer_id)
       true
     end
 
@@ -100,11 +101,11 @@ module PulsarSdk
     def async_command(cmd)
       @received_message.clear if cmd.typeof_redeliver_unacknowledged_messages?
 
-      @client.conn.async_command(cmd)
+      @conn.async_command(cmd)
     end
 
     def sync_command(cmd)
-      @client.conn.async_command(cmd)
+      @conn.async_command(cmd)
     end
 
     def new_request_id
