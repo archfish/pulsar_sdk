@@ -8,6 +8,8 @@ module PulsarSdk
         @service_url = service_url
       end
 
+      # output
+      #   [proxy_addr, broker_addr]
       def lookup(topic)
         base_cmd = Pulsar::Proto::BaseCommand.new(
           type: Pulsar::Proto::BaseCommand::Type::LOOKUP,
@@ -26,7 +28,7 @@ module PulsarSdk
             puts "ERROR: Failed to lookup topic 「#{topic}」, #{resp.error}"
             break
           when Pulsar::Proto::CommandLookupTopicResponse::LookupType::Redirect
-            broker_addr, proxy_addr = extract_addr(resp)
+            proxy_addr, broker_addr = extract_addr(resp)
             base_cmd = Pulsar::Proto::BaseCommand.new(
               type: Pulsar::Proto::BaseCommand::Type::LOOKUP,
               lookupTopic: Pulsar::Proto::CommandLookupTopic.new(
@@ -35,7 +37,7 @@ module PulsarSdk
                 authoritative: resp.authoritative
               )
             )
-            resp = @client.sync_request(broker_addr, proxy_addr, base_cmd).lookupTopicResponse
+            resp = @client.sync_request(proxy_addr, broker_addr, base_cmd).lookupTopicResponse
           when Pulsar::Proto::CommandLookupTopicResponse::LookupType::Connect
             return extract_addr(resp)
           end
@@ -55,7 +57,7 @@ module PulsarSdk
         broker_addr = resp.brokerServiceUrl
         proxy_addr = resp.proxy_through_service_url ? @service_url : broker_addr
 
-        [broker_addr, proxy_addr]
+        [proxy_addr, broker_addr]
       end
     end
   end

@@ -1,8 +1,10 @@
 # A pure ruby client for Apache Pulsar
 
+Respecting [Pulsar binary protocol specification][2]
+
 ## Example
 
-见`examples`中的例子
+See `examples`.
 
 ## Dev
 
@@ -58,3 +60,4 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
 - [x] Thread safe
 
 [1]: https://github.com/apache/pulsar/wiki/PIP-26%3A-Delayed-Message-Delivery "PIP 26: Delayed Message Delivery"
+[2]: https://pulsar.apache.org/docs/en/develop-binary-protocol/ "Pulsar binary protocol specification"
