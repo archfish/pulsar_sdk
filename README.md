@@ -7,12 +7,28 @@
 ## Dev
 
 ```shell
+#!/bin/sh
+
 PB_OUT="./lib/protobuf/"
+PB_OUT_F='pulsar_api.pb.rb'
 
 mkdir -p ${PB_OUT}
 
 protoc -I ${PULSAR_GIT}/pulsar-common/src/main/proto/ --ruby_out ${PB_OUT} PulsarApi.proto
-mv ${PB_OUT}PulsarApi_pb.rb ${PB_OUT}pulsar_api.pb.rb
+mv ${PB_OUT}PulsarApi_pb.rb ${PB_OUT}${PB_OUT_F}
+
+# fix pulsar.proto.ProtocolVersion error: invalid name `v0' for constant
+if [ $(uname) = 'Darwin' ]
+then
+    suffix='.pbbak'
+fi
+
+for i in $(seq 0 15)
+do
+    sed -i ${suffix} "s;value :v$i, $i;value :V$i, $i;g" ${PB_OUT}${PB_OUT_F}
+done
+
+rm -f ${PB_OUT}${PB_OUT_F}.pbbak
 
 protoc -I ${PULSAR_GIT}/pulsar-common/src/main/proto/ --ruby_out ${PB_OUT} PulsarMarkers.proto
 mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
