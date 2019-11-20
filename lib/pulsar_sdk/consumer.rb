@@ -4,9 +4,8 @@ module PulsarSdk
       raise "client expected a PulsarSdk::Client got #{client.class}" unless client.is_a?(PulsarSdk::Client)
       raise "opts expected a PulsarSdk::Options::Consumer got #{opts.class}" unless opts.is_a?(PulsarSdk::Options::Consumer)
 
-      @client = client
-      @conn = @client.conn
-      @consumer_id = @client.new_consumer_id
+      @conn = client.conn
+      @consumer_id = client.new_consumer_id
       @consumer_name = opts.name
       @subscription_name = opts.subscription_name
       @topic = opts.topic
@@ -25,7 +24,7 @@ module PulsarSdk
           consumer_name: @consumer_name
         )
       )
-      sync_command(base_cmd)
+      sync_request(base_cmd)
     end
 
     def set_handler!
@@ -47,7 +46,7 @@ module PulsarSdk
         )
       )
 
-      sync_command(base_cmd)
+      sync_request(base_cmd)
     end
 
     def subscription
@@ -62,7 +61,7 @@ module PulsarSdk
           request_id: new_request_id
         )
       )
-      async_command(base_cmd)
+      async_request(base_cmd)
     end
 
     def receive
@@ -88,28 +87,28 @@ module PulsarSdk
           request_id: new_request_id
         )
       )
-      sync_command(base_cmd)
+      sync_request(base_cmd)
 
       remove_handler!
     end
 
     def command_handler
-      Proc.new{|cmd| async_command(cmd)}
+      Proc.new{|cmd| async_request(cmd)}
     end
 
     private
-    def async_command(cmd)
+    def async_request(cmd)
       @received_message.clear if cmd.typeof_redeliver_unacknowledged_messages?
 
-      @conn.async_command(cmd)
+      @conn.async_request(cmd)
     end
 
-    def sync_command(cmd)
-      @conn.async_command(cmd)
+    def sync_request(cmd)
+      @conn.async_request(cmd)
     end
 
     def new_request_id
-      @client.new_request_id
+      @conn.new_request_id
     end
 
     class ReceivedQueue < PulsarSdk::Tweaks::TimeoutQueue; end

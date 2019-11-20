@@ -3,7 +3,7 @@ require 'socket'
 module PulsarSdk
   class Connection
     CLIENT_NAME = "pulsar-client-#{PulsarSdk::VERSION}".freeze
-    PROTOCOL_VER = Pulsar::Proto::ProtocolVersion.resolve(:v13)
+    PROTOCOL_VER = Pulsar::Proto::ProtocolVersion::V13
     DEFAULT_PORT = 6650
 
     attr_accessor :operation_timeout, :connection_timeout
@@ -21,6 +21,8 @@ module PulsarSdk
       @state = Status.new
       self.operation_timeout = 30
       self.connection_timeout = 5
+
+      @request_id = 0
 
       @mutex = Mutex.new
       @receive_queue = Queue.new
@@ -82,7 +84,7 @@ module PulsarSdk
         )
       )
 
-      sync_command(base_cmd)
+      sync_request(base_cmd)
 
       @state.ready!
       true
@@ -129,14 +131,14 @@ module PulsarSdk
     end
 
     # 发送消息或命令
-    def async_command(cmd)
+    def async_request(cmd)
       write(
         PulsarSdk::Protocol::Frame.encode(cmd)
       )
     end
 
-    def sync_command(cmd, timeout = nil)
-      async_command(cmd)
+    def sync_request(cmd, timeout = nil)
+      async_request(cmd)
       if request_id = cmd.get_request_id
         return @response_container.fetch(request_id, timeout)
       end
@@ -149,6 +151,10 @@ module PulsarSdk
       set_last_data_received
 
       handle_base_command(base_cmd, meta_and_payload)
+    end
+
+    def new_request_id
+      @request_id += 1
     end
 
     private
@@ -234,7 +240,7 @@ module PulsarSdk
         pong: Pulsar::Proto::CommandPong.new
       )
 
-      async_command(base_cmd)
+      async_request(base_cmd)
     end
 
     def send_ping
@@ -243,7 +249,7 @@ module PulsarSdk
         ping: Pulsar::Proto::CommandPing.new
       )
 
-      async_command(base_cmd)
+      async_request(base_cmd)
     end
 
     class Status

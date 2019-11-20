@@ -4,9 +4,8 @@ module PulsarSdk
       raise "client expected a PulsarSdk::Client got #{client.class}" unless client.is_a?(PulsarSdk::Client)
       raise "opts expected a PulsarSdk::Options::Producer got #{opts.class}" unless opts.is_a?(PulsarSdk::Options::Producer)
 
-      @client = client
-      @conn = @client.conn
-      @producer_id = @client.new_producer_id
+      @conn = client.conn
+      @producer_id = client.new_producer_id
       @producer_name = [opts.name, @producer_id].join('.')
       @receipt_queue = ReceiptQueue.new
 
@@ -20,7 +19,7 @@ module PulsarSdk
           producer_name: @producer_name
         )
       )
-      sync_command(base_cmd)
+      sync_request(base_cmd)
     end
 
     def set_handler!
@@ -91,18 +90,18 @@ module PulsarSdk
           request_id: new_request_id
         )
       )
-      sync_command(base_cmd)
+      sync_request(base_cmd)
 
       remove_handler!
     end
 
     private
-    def async_command(cmd)
-      @conn.async_command(cmd)
+    def async_request(cmd)
+      @conn.async_request(cmd)
     end
 
-    def sync_command(cmd)
-      @conn.sync_command(cmd)
+    def sync_request(cmd)
+      @conn.sync_request(cmd)
     end
 
     def send_message(frame)
@@ -110,7 +109,7 @@ module PulsarSdk
     end
 
     def new_request_id
-      @client.new_request_id
+      @conn.new_request_id
     end
 
     class ReceiptQueue < ::PulsarSdk::Tweaks::TimeoutQueue; end
