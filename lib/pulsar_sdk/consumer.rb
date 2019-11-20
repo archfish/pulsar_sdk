@@ -4,15 +4,14 @@ module PulsarSdk
       raise "client expected a PulsarSdk::Client got #{client.class}" unless client.is_a?(PulsarSdk::Client)
       raise "opts expected a PulsarSdk::Options::Consumer got #{opts.class}" unless opts.is_a?(PulsarSdk::Options::Consumer)
 
-      @conn = client.conn
+      @topic = opts.topic
+      @conn = client.establish(*client.lookup_service.lookup(@topic))
       @consumer_id = client.new_consumer_id
       @consumer_name = opts.name
       @subscription_name = opts.subscription_name
-      @topic = opts.topic
 
       @received_message = ReceivedQueue.new
 
-      request_id = new_request_id
       base_cmd = Pulsar::Proto::BaseCommand.new(
         type: Pulsar::Proto::BaseCommand::Type::SUBSCRIBE,
         subscribe: Pulsar::Proto::CommandSubscribe.new(
@@ -20,7 +19,7 @@ module PulsarSdk
           subscription: opts.subscription_name,
           subType: opts.subscription_type,
           consumer_id: @consumer_id,
-          request_id: request_id,
+          request_id: new_request_id,
           consumer_name: @consumer_name
         )
       )

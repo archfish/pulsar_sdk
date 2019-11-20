@@ -11,9 +11,9 @@ module PulsarSdk
     attr_reader :producer_handlers
     attr_reader :response_container # 用于处理状态回调
 
-    def initialize(logical_addr, physical_addr = nil, tls_options = nil, auth_provider = nil)
-      @logical_addr = logical_addr
-      @physical_addr = physical_addr || @logical_addr
+    def initialize(proxy_addr, broker_addr = nil, tls_options = nil, auth_provider = nil)
+      @proxy_addr = proxy_addr
+      @broker_addr = broker_addr || @proxy_addr
       @tls_options = tls_options&.dup
       @auth_provider = auth_provider
       @socket = nil
@@ -140,7 +140,7 @@ module PulsarSdk
     def sync_request(cmd, timeout = nil)
       async_request(cmd)
       if request_id = cmd.get_request_id
-        return @response_container.fetch(request_id, timeout)
+        return @response_container.delete(request_id, timeout)
       end
       true
     end
@@ -163,7 +163,7 @@ module PulsarSdk
     end
 
     def extract_port_and_host
-      url = URI.parse(@logical_addr)
+      url = URI.parse(@broker_addr)
       [url.port || DEFAULT_PORT, url.host]
     end
 
@@ -213,20 +213,14 @@ module PulsarSdk
       consumer_id = cmd.get_consumer_id
       return if consumer_id.nil?
       handler = @consumer_handlers.find(consumer_id)
-      if handler.nil?
-        puts "WARN: can't get handler for consumer_id: #{consumer_id}"
-        return
-      end
+      return if handler.nil?
       handler.call(cmd, payload)
     end
 
     def handle_send_receipt(send_receipt)
       producer_id = send_receipt.producer_id
       handler = @producer_handlers.find(producer_id)
-      if handler.nil?
-        puts "WARN: can't get handler for producer_id: #{producer_id}"
-        return
-      end
+      return if handler.nil?
       handler.call(send_receipt)
     end
 
@@ -279,12 +273,12 @@ module PulsarSdk
       end
     end
 
-    class EventHandler < ::PulsarSdk::Tweaks::WaitQueue; end
+    class EventHandler < ::PulsarSdk::Tweaks::WaitMap; end
 
     class ConsumerHandler < EventHandler; end
 
     class ProducerHandler < EventHandler; end
 
-    class ResponseContainer < ::PulsarSdk::Tweaks::WaitQueue; end
+    class ResponseContainer < ::PulsarSdk::Tweaks::WaitMap; end
   end
 end

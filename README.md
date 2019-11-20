@@ -50,7 +50,7 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
   - [x] handle ping command
   - [ ] send ping command
 - [ ] Service discovery
-  - [ ] Topic lookup
+  - [x] Topic lookup
   - [ ] Partitioned topics discovery
 - [ ] Log Optimization
 - [ ] Connection pool

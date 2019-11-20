@@ -4,18 +4,17 @@ module PulsarSdk
       raise "client expected a PulsarSdk::Client got #{client.class}" unless client.is_a?(PulsarSdk::Client)
       raise "opts expected a PulsarSdk::Options::Producer got #{opts.class}" unless opts.is_a?(PulsarSdk::Options::Producer)
 
-      @conn = client.conn
+      @conn = client.establish(*client.lookup_service.lookup(opts.topic))
       @producer_id = client.new_producer_id
       @producer_name = [opts.name, @producer_id].join('.')
       @receipt_queue = ReceiptQueue.new
 
-      request_id = new_request_id
       base_cmd = Pulsar::Proto::BaseCommand.new(
         type: Pulsar::Proto::BaseCommand::Type::PRODUCER,
         producer: Pulsar::Proto::CommandProducer.new(
           topic: opts.topic,
           producer_id: @producer_id,
-          request_id: request_id,
+          request_id: new_request_id,
           producer_name: @producer_name
         )
       )
