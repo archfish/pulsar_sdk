@@ -10,6 +10,7 @@ module PulsarSdk
     attr_reader :consumer_handlers
     attr_reader :producer_handlers
     attr_reader :response_container # 用于处理状态回调
+    attr_reader :seq_generator
 
     def initialize(proxy_addr, broker_addr = nil, tls_options = nil, auth_provider = nil)
       @proxy_addr = proxy_addr
@@ -22,7 +23,7 @@ module PulsarSdk
       self.operation_timeout = 30
       self.connection_timeout = 5
 
-      @request_id = 0
+      @seq_generator = SeqGenerator.new
 
       @mutex = Mutex.new
       @receive_queue = Queue.new
@@ -121,6 +122,26 @@ module PulsarSdk
       @socket.closed?
     end
 
+    def request(cmd, msg = nil, async = false, timeout = nil)
+      cmd.seq_generator ||= @seq_generator
+
+      # NOTE try to auto set *_id
+      cmd.set_request_id
+      cmd.set_consumer_id
+      cmd.set_producer_id
+      cmd.set_sequence_id
+
+      frame = PulsarSdk::Protocol::Frame.encode(cmd, msg)
+      write(frame)
+      return true if async
+
+      if request_id = cmd.get_request_id
+        return @response_container.delete(request_id, timeout)
+      end
+
+      true
+    end
+
     def write(bytes)
       begin
         @socket.write_nonblock(bytes)
@@ -154,7 +175,7 @@ module PulsarSdk
     end
 
     def new_request_id
-      @request_id += 1
+      @seq_generator.new_request_id
     end
 
     private
@@ -184,6 +205,7 @@ module PulsarSdk
       when cmd.typeof_get_topics_of_namespace_response?
       when cmd.typeof_get_schema_response?
       when cmd.typeof_partitioned_metadata_response?
+        handle_response(cmd)
       when cmd.typeof_error?
         puts "ERROR: #{cmd.error} \n #{cmd.message}"
       when cmd.typeof_close_producer?
@@ -269,6 +291,30 @@ module PulsarSdk
           @lock.synchronize do
             @state = x
           end
+        end
+      end
+    end
+
+    class SeqGenerator
+      def initialize
+        @mutex = Mutex.new
+        @seq = {}
+      end
+
+      # def new_request_id
+      # def new_producer_id
+      # def new_consumer_id
+      # def new_sequence_id
+      [:request_id, :producer_id, :consumer_id, :sequence_id].each do |k|
+        define_method "new_#{k}" do
+          next!(k)
+        end
+      end
+
+      def next!(key)
+        @mutex.synchronize do
+          @seq[key] ||= 0
+          @seq[key] += 1
         end
       end
     end

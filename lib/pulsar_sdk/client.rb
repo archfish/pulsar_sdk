@@ -24,6 +24,10 @@ module PulsarSdk
       conn
     end
 
+    def new_request_id
+      @conn.new_request_id
+    end
+
     def new_producer_id
       @producer_id += 1
     end
@@ -45,9 +49,7 @@ module PulsarSdk
     def create_producer(opts)
       raise "opts expected a PulsarSdk::Options::Producer got #{opts.class}" unless opts.is_a?(PulsarSdk::Options::Producer)
       # FIXME check if connection ready
-      producer = PulsarSdk::Producer.new(self, opts)
-      producer.set_handler!
-      producer
+      PulsarSdk::Producer.create(self, opts)
     end
 
     def subscribe(opts)

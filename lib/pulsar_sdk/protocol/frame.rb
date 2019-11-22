@@ -18,7 +18,7 @@ module PulsarSdk
 
         # 消息发送帧
         # [TOTAL_SIZE] [CMD_SIZE] [CMD] [MAGIC_NUMBER] [CHECKSUM] [METADATA_SIZE] [METADATA] [PAYLOAD]
-        raise "message MUST be PulsarSdk::ProducerMessage but got #{message.class}" unless message.is_a?(PulsarSdk::ProducerMessage)
+        raise "message MUST be PulsarSdk::Producer::Message but got #{message.class}" unless message.is_a?(PulsarSdk::Producer::Message)
 
         metadata = message.metadata
         pb_meta = metadata.to_proto

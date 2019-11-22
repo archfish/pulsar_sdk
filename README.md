@@ -41,6 +41,7 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
 - [x] Connection establishment
 - [x] Producer
   - [x] Message Delivery
+  - [ ] Batch Message Delivery
   - [x] [Delayed Message Delivery][1]
   - [x] Get SendReceipt
   - [x] Close Producer
@@ -53,11 +54,14 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
   - [ ] send ping command
 - [ ] Service discovery
   - [x] Topic lookup
-  - [ ] Partitioned topics discovery
+  - [x] Partitioned topics discovery
 - [ ] Log Optimization
 - [ ] Connection pool
 - [ ] Unit Test
 - [x] Thread safe
+- [ ] Schema
+  - [ ] Get
+  - [ ] Create
 
 [1]: https://github.com/apache/pulsar/wiki/PIP-26%3A-Delayed-Message-Delivery "PIP 26: Delayed Message Delivery"
 [2]: https://pulsar.apache.org/docs/en/develop-binary-protocol/ "Pulsar binary protocol specification"

@@ -15,7 +15,6 @@ module PulsarSdk
           type: Pulsar::Proto::BaseCommand::Type::LOOKUP,
           lookupTopic: Pulsar::Proto::CommandLookupTopic.new(
             topic: topic,
-            request_id: new_request_id,
             authoritative: false
           )
         )
@@ -33,7 +32,6 @@ module PulsarSdk
               type: Pulsar::Proto::BaseCommand::Type::LOOKUP,
               lookupTopic: Pulsar::Proto::CommandLookupTopic.new(
                 topic: topic,
-                request_id: new_request_id,
                 authoritative: resp.authoritative
               )
             )
@@ -45,12 +43,8 @@ module PulsarSdk
       end
 
       private
-      def new_request_id
-        @client.conn.new_request_id
-      end
-
       def sync_request(cmd)
-        @client.conn.sync_request(cmd)
+        @client.conn.request(cmd)
       end
 
       def extract_addr(resp)
