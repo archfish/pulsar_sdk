@@ -32,7 +32,7 @@ module PulsarSdk
     end
 
     def remove_handler!
-      @conn.consumer_handlers.del(@consumer_id)
+      @conn.consumer_handlers.delete(@consumer_id)
       true
     end
 
