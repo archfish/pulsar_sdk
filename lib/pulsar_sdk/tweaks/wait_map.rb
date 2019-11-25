@@ -45,8 +45,8 @@ module PulsarSdk
               signal.wait(mutex)
             end
           elsif @responses.empty? && timeout != 0
-            timeout_at = Time.now.to_f + timeout
-            while @responses.empty? && (res = timeout_at - Time.now.to_f) > 0
+            timeout_at = TimeX.now.to_f + timeout
+            while @responses.empty? && (res = timeout_at - TimeX.now.to_f) > 0
               signal.wait(mutex, res)
             end
           end
