@@ -8,7 +8,7 @@ module PulsarSdk
 
         @metadata ||= Pulsar::Proto::MessageMetadata.new
         publish_time = @metadata.publish_time
-        @metadata.publish_time = publish_time.zero? ? Time.now.timestamp : publish_time
+        @metadata.publish_time = publish_time.zero? ? TimeX.now.timestamp : publish_time
       end
 
       def producer_name=(v)

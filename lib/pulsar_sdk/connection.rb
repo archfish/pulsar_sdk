@@ -18,7 +18,7 @@ module PulsarSdk
       @tls_options = tls_options&.dup
       @auth_provider = auth_provider
       @socket = nil
-      @last_data_received_at = Time.now
+      @last_data_received_at = TimeX.now
       @state = Status.new
       self.operation_timeout = 30
       self.connection_timeout = 5
@@ -247,7 +247,7 @@ module PulsarSdk
     end
 
     def set_last_data_received
-      @last_data_received_at = Time.now
+      @last_data_received_at = TimeX.now
     end
 
     def handle_ping

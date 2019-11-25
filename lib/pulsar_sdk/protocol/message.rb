@@ -14,7 +14,7 @@ module PulsarSdk
         define_method "#{x}_at" do
           v = self.public_send("#{x}_time").to_i
           return if v.zero?
-          Time.at_timestamp(v)
+          TimeX.at_timestamp(v)
         end
       end
 

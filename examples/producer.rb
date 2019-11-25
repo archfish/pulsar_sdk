@@ -15,7 +15,7 @@ base_cmd = Pulsar::Proto::BaseCommand.new(
   )
 )
 
-p_msg = PulsarSdk::Producer::Message.new("dang qian shi jian #{Time.now}")
+p_msg = PulsarSdk::Producer::Message.new("dang qian shi jian #{TimeX.now}")
 
 # ++======消息发送后等待系统响应======++
 producer.execute(base_cmd, p_msg)
@@ -23,7 +23,7 @@ producer.execute(base_cmd, p_msg)
 # ++======调用后立即返回，服务器可能还没收到消息======++
 producer.execute_async(base_cmd, p_msg)
 
-# ++======发送消息后需要获取消息回执，因为回执与producer_id和request_id有关必须要知道真实的producer才能获取到回执======++
+# ++======发送消息后需要获取消息回执，因为回执与producer_id和request_id有关必须要知道真实的producer才能获取到======++
 real_producer = producer.real_producer(p_msg)
 real_producer.execute(base_cmd, p_msg)
 real_producer.receipt
@@ -39,7 +39,7 @@ base_cmd = Pulsar::Proto::BaseCommand.new(
   )
 )
 # message will available in 10 second
-deliver_at = Time.now + 10
+deliver_at = TimeX.now + 10
 p_msg = PulsarSdk::Producer::Message.new(
   "dang qian shi jian publush at: #{now}, performat at: #{deliver_at}",
   Pulsar::Proto::MessageMetadata.new(deliver_at_time: deliver_at.timestamp)

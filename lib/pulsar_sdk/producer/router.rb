@@ -17,7 +17,7 @@ module PulsarSdk
 
         return (@handler.call(key) % total) unless key.to_s.empty?
 
-        Murmur3.int32_hash(Time.now.timestamp) % total
+        Murmur3.int32_hash(TimeX.now.timestamp) % total
       end
 
       # 将hash值限制在32位内，防止key过长导致过多内存占用

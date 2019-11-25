@@ -28,8 +28,8 @@ module PulsarSdk
               @received.wait(@mutex)
             end
           elsif @receive_queue.empty? && timeout != 0
-            timeout_at = Time.now.to_f + timeout
-            while @receive_queue.empty? && (res = timeout_at - Time.now.to_f) > 0
+            timeout_at = TimeX.now.to_f + timeout
+            while @receive_queue.empty? && (res = timeout_at - TimeX.now.to_f) > 0
               @received.wait(@mutex, res)
             end
           end
