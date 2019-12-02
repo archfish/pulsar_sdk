@@ -48,8 +48,8 @@ module PulsarSdk
       end
 
       def extract_addr(resp)
-        broker_addr = resp.brokerServiceUrl
-        proxy_addr = resp.proxy_through_service_url ? @service_url : broker_addr
+        proxy_addr = resp.brokerServiceUrl
+        broker_addr = resp.proxy_through_service_url ? @service_url : proxy_addr
 
         [proxy_addr, broker_addr]
       end

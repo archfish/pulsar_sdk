@@ -36,7 +36,7 @@ protoc -I ${PULSAR_GIT}/pulsar-common/src/main/proto/ --ruby_out ${PB_OUT} Pulsa
 mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
 ```
 
-## Future
+## Features
 
 - [x] Connection establishment
 - [x] Producer
@@ -62,6 +62,12 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
 - [ ] Schema
   - [ ] Get
   - [ ] Create
+
+## WIP
+
+- Connection pool
+
+A lot of refactoring is needed, and the API may change.
 
 [1]: https://github.com/apache/pulsar/wiki/PIP-26%3A-Delayed-Message-Delivery "PIP 26: Delayed Message Delivery"
 [2]: https://pulsar.apache.org/docs/en/develop-binary-protocol/ "Pulsar binary protocol specification"
