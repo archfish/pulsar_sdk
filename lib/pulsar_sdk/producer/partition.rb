@@ -1,10 +1,10 @@
 module PulsarSdk
   module Producer
-    class Base
+    class Partition
       def initialize(client, opts)
         @topic = opts.topic
 
-        @conn = client.establish(*client.lookup_service.lookup(opts.topic))
+        @conn = client.connection(*client.lookup(opts.topic))
 
         @seq_generator = SeqGenerator.new(@conn.seq_generator)
         @producer_id = @seq_generator.new_producer_id
@@ -33,6 +33,7 @@ module PulsarSdk
       end
 
       # 获取发送回执
+      # TODO get receipt by sequence_id
       def receipt
         receipt_ = @receipt_queue.pop.first
 

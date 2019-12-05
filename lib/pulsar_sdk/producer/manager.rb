@@ -28,10 +28,11 @@ module PulsarSdk
       private
       def init_producer_by(client, opts)
         opts = opts.dup
+
         topics = PulsarSdk::Protocol::PartitionedTopic.new(client, opts.topic).partitions
         topics.map do |topic|
           opts.topic = topic
-          PulsarSdk::Producer::Base.new(client, opts)
+          PulsarSdk::Producer::Partition.new(client, opts)
         end
       end
     end
