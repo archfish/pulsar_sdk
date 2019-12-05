@@ -1,5 +1,5 @@
-opts = PulsarSdk::Options::Client.new(url: 'pulsar://pulsar.reocar.lan')
-client = PulsarSdk::Client.new(opts)
+opts = PulsarSdk::Options::Connection.new(logical_addr: 'pulsar://pulsar.reocar.lan')
+client = PulsarSdk::Client.create(opts)
 
 topic = 'persistent://rental_car/orders/created'
 topic = PulsarSdk::Protocol::PartitionedTopic.new(client, topic)

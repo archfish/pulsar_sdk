@@ -1,12 +1,14 @@
 module PulsarSdk
   class Consumer
     def initialize(client, opts)
-      raise "client expected a PulsarSdk::Client got #{client.class}" unless client.is_a?(PulsarSdk::Client)
+      raise "client expected a PulsarSdk::Client::Rpc got #{client.class}" unless client.is_a?(PulsarSdk::Client::Rpc)
       raise "opts expected a PulsarSdk::Options::Consumer got #{opts.class}" unless opts.is_a?(PulsarSdk::Options::Consumer)
 
       @topic = opts.topic
-      @conn = client.establish(*client.lookup_service.lookup(@topic))
-      @consumer_id = client.new_consumer_id
+      @conn = client.connection(*client.lookup(@topic))
+      @seq_generator = SeqGenerator.new(@conn.seq_generator)
+
+      @consumer_id = @seq_generator.new_consumer_id
       @consumer_name = opts.name
       @subscription_name = opts.subscription_name
 
@@ -18,8 +20,6 @@ module PulsarSdk
           topic: @topic,
           subscription: opts.subscription_name,
           subType: opts.subscription_type,
-          consumer_id: @consumer_id,
-          request_id: new_request_id,
           consumer_name: @consumer_name
         )
       )
@@ -40,7 +40,6 @@ module PulsarSdk
       base_cmd = Pulsar::Proto::BaseCommand.new(
         type: Pulsar::Proto::BaseCommand::Type::FLOW,
         flow: Pulsar::Proto::CommandFlow.new(
-          consumer_id: @consumer_id,
           messagePermits: batch
         )
       )
@@ -55,10 +54,7 @@ module PulsarSdk
     def unsubscribe
       base_cmd = Pulsar::Proto::BaseCommand.new(
         type: Pulsar::Proto::BaseCommand::Type::UNSUBSCRIBE,
-        unsubscribe: Pulsar::Proto::CommandUnsubscribe.new(
-          consumer_id: @consumer_id,
-          request_id: new_request_id
-        )
+        unsubscribe: Pulsar::Proto::CommandUnsubscribe.new
       )
       async_request(base_cmd)
     end
@@ -82,8 +78,7 @@ module PulsarSdk
       base_cmd = Pulsar::Proto::BaseCommand.new(
         type: Pulsar::Proto::BaseCommand::Type::CLOSE_CONSUMER,
         close_consumer: Pulsar::Proto::CommandCloseConsumer.new(
-          consumer_id: @consumer_id,
-          request_id: new_request_id
+          consumer_id: @consumer_id
         )
       )
       sync_request(base_cmd)
@@ -97,19 +92,33 @@ module PulsarSdk
 
     private
     def async_request(cmd)
+      cmd.seq_generator = @seq_generator
       @received_message.clear if cmd.typeof_redeliver_unacknowledged_messages?
 
-      @conn.async_request(cmd)
+      @conn.request(cmd)
     end
 
     def sync_request(cmd)
-      @conn.async_request(cmd)
-    end
-
-    def new_request_id
-      @conn.new_request_id
+      cmd.seq_generator = @seq_generator
+      @conn.request(cmd, nil, true)
     end
 
     class ReceivedQueue < PulsarSdk::Tweaks::TimeoutQueue; end
+
+    # NOTE keep consumer_id and sequence_id static
+    class SeqGenerator
+      def initialize(seq_g)
+        @seq_g = seq_g
+        @consumer_id = @seq_g.new_consumer_id
+      end
+
+      def new_consumer_id
+        @consumer_id
+      end
+
+      def method_missing(method)
+        @seq_g.public_send(method)
+      end
+    end
   end
 end

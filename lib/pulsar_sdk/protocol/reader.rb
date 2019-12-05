@@ -14,6 +14,7 @@ module PulsarSdk
       # TODO add timeout?
       def read_fully
         frame_szie = read_frame_size
+        raise "IO reader is empty! maybe server error, please check server log for help." if frame_szie.nil?
 
         base_cmd = read_command
 

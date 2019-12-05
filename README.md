@@ -56,7 +56,7 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
   - [x] Topic lookup
   - [x] Partitioned topics discovery
 - [ ] Log Optimization
-- [ ] Connection pool
+- [x] Connection pool
 - [ ] Unit Test
 - [x] Thread safe
 - [ ] Schema
