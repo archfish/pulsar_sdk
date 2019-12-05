@@ -1,4 +1,4 @@
-require 'pulsar_sdk/producer/base'
+require 'pulsar_sdk/producer/partition'
 require 'pulsar_sdk/producer/message'
 require 'pulsar_sdk/producer/router'
 require 'pulsar_sdk/producer/manager'

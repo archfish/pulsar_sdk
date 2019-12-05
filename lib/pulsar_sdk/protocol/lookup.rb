@@ -9,7 +9,7 @@ module PulsarSdk
       end
 
       # output
-      #   [proxy_addr, broker_addr]
+      #   [logical_addr, physical_addr]
       def lookup(topic)
         base_cmd = Pulsar::Proto::BaseCommand.new(
           type: Pulsar::Proto::BaseCommand::Type::LOOKUP,
@@ -18,7 +18,7 @@ module PulsarSdk
             authoritative: false
           )
         )
-        resp = sync_request(base_cmd).lookupTopicResponse
+        resp = @client.request_any_broker(base_cmd).lookupTopicResponse
 
         # 最多查找这么多次
         MAX_LOOKUP_TIMES.times do
@@ -27,7 +27,7 @@ module PulsarSdk
             puts "ERROR: Failed to lookup topic 「#{topic}」, #{resp.error}"
             break
           when Pulsar::Proto::CommandLookupTopicResponse::LookupType::Redirect
-            proxy_addr, broker_addr = extract_addr(resp)
+            logical_addr, physical_addr = extract_addr(resp)
             base_cmd = Pulsar::Proto::BaseCommand.new(
               type: Pulsar::Proto::BaseCommand::Type::LOOKUP,
               lookupTopic: Pulsar::Proto::CommandLookupTopic.new(
@@ -35,7 +35,8 @@ module PulsarSdk
                 authoritative: resp.authoritative
               )
             )
-            resp = @client.sync_request(proxy_addr, broker_addr, base_cmd).lookupTopicResponse
+            # NOTE 从连接池拿
+            resp = @client.request(logical_addr, physical_addr, base_cmd).lookupTopicResponse
           when Pulsar::Proto::CommandLookupTopicResponse::LookupType::Connect
             return extract_addr(resp)
           end
@@ -43,15 +44,11 @@ module PulsarSdk
       end
 
       private
-      def sync_request(cmd)
-        @client.conn.request(cmd)
-      end
-
       def extract_addr(resp)
-        proxy_addr = resp.brokerServiceUrl
-        broker_addr = resp.proxy_through_service_url ? @service_url : proxy_addr
+        logical_addr = resp.brokerServiceUrl
+        physical_addr = resp.proxy_through_service_url ? @service_url : logical_addr
 
-        [proxy_addr, broker_addr]
+        [logical_addr, physical_addr]
       end
     end
   end

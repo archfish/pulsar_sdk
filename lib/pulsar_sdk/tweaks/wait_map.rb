@@ -3,29 +3,39 @@ module PulsarSdk
     class WaitMap
       def initialize
         @mutex = Mutex.new
-        @responses = {}
+        @map = {}
 
         @wait = {}
       end
 
-      def add(id, state)
+      def add(id, value)
         @mutex.synchronize do
-          @responses[id] = state
+          @map[id] = value
           _, signal = @wait[id]
           signal.signal unless signal.nil?
         end
+        value
       end
 
       def clear
         @mutex.synchronize do
-          @responses = {}
+          @map.each {|k, v| yield k, v} if block_given?
+
+          @map = {}
+        end
+        true
+      end
+
+      def each(&block)
+        @mutex.synchronize do
+          @map.each {|k, v| yield k, v}
         end
       end
 
       # 不会删除元素
       def find(id)
         @mutex.synchronize do
-          @responses[id]
+          @map[id]
         end
       end
 
@@ -33,7 +43,7 @@ module PulsarSdk
         mutex, signal = []
 
         @mutex.synchronize do
-          return @responses.delete(id) if @responses.has_key?(id)
+          return @map.delete(id) if @map.has_key?(id)
 
           @wait[id] ||= [Mutex.new, ConditionVariable.new]
           mutex, signal = @wait[id]
@@ -41,19 +51,19 @@ module PulsarSdk
 
         mutex.synchronize do
           if timeout.nil?
-            while @responses.empty?
+            while @map.empty?
               signal.wait(mutex)
             end
-          elsif @responses.empty? && timeout != 0
+          elsif @map.empty? && timeout != 0
             timeout_at = TimeX.now.to_f + timeout
-            while @responses.empty? && (res = timeout_at - TimeX.now.to_f) > 0
+            while @map.empty? && (res = timeout_at - TimeX.now.to_f) > 0
               signal.wait(mutex, res)
             end
           end
         end
 
         @mutex.synchronize do
-          @responses.delete id
+          @map.delete id
         end
       end
     end

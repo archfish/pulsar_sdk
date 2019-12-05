@@ -47,7 +47,7 @@ module PulsarSdk
             topic: @tn.to_s
           )
         )
-        @topic_metadata_ = @client.conn.request(base_cmd).partitionMetadataResponse
+        @topic_metadata_ = @client.request_any_broker(base_cmd).partitionMetadataResponse
       end
     end
 

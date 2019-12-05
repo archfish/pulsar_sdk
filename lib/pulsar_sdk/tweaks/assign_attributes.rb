@@ -5,6 +5,8 @@ module PulsarSdk
         set_default
 
         assign_attributes(opts)
+
+        remove_empty_instance_variables!
       end
 
       def assign_attributes(opts)
@@ -17,6 +19,12 @@ module PulsarSdk
 
       private
       def set_default; end
+
+      def remove_empty_instance_variables!
+        instance_variables.each do |x|
+          remove_instance_variable(x) if instance_variable_get(x).nil?
+        end
+      end
     end
   end
 end
