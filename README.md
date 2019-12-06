@@ -65,9 +65,7 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
 
 ## WIP
 
-- Connection pool
-
-A lot of refactoring is needed, and the API may change.
+- Log Optimization
 
 [1]: https://github.com/apache/pulsar/wiki/PIP-26%3A-Delayed-Message-Delivery "PIP 26: Delayed Message Delivery"
 [2]: https://pulsar.apache.org/docs/en/develop-binary-protocol/ "Pulsar binary protocol specification"
