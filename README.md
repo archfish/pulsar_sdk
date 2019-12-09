@@ -39,16 +39,20 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
 ## Features
 
 - [x] Connection establishment
+  - [ ] TLS connection
+  - [ ] Authentication
 - [x] Producer
   - [x] Message Delivery
   - [ ] Batch Message Delivery
   - [x] [Delayed Message Delivery][1]
   - [x] Get SendReceipt
   - [x] Close Producer
-- [x] Consumer
+  - [ ] [Deliver message after AR transaction commit][3]
+- [ ] Consumer
   - [x] Flow control
   - [x] Ack
   - [x] Message Redelivery
+  - [ ] [Dead Letter Topic][4]
 - [ ] Keep alive
   - [x] handle ping command
   - [ ] send ping command
@@ -69,3 +73,5 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
 
 [1]: https://github.com/apache/pulsar/wiki/PIP-26%3A-Delayed-Message-Delivery "PIP 26: Delayed Message Delivery"
 [2]: https://pulsar.apache.org/docs/en/develop-binary-protocol/ "Pulsar binary protocol specification"
+[3]: https://github.com/Envek/after_commit_everywhere "after commit everywhere"
+[4]: https://github.com/apache/pulsar/wiki/PIP-22:-Pulsar-Dead-Letter-Topic "PIP 22: Pulsar Dead Letter Topic"
