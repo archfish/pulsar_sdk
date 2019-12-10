@@ -33,7 +33,8 @@ module PulsarSdk
               @received.wait(@mutex, res)
             end
           end
-          @receive_queue.pop
+
+          @receive_queue.pop if !@receive_queue.empty?
         end
       end
     end

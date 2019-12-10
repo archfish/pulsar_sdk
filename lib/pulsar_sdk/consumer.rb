@@ -36,7 +36,7 @@ module PulsarSdk
       true
     end
 
-    def flow(batch = 1000)
+    def flow(batch)
       base_cmd = Pulsar::Proto::BaseCommand.new(
         type: Pulsar::Proto::BaseCommand::Type::FLOW,
         flow: Pulsar::Proto::CommandFlow.new(
@@ -59,8 +59,11 @@ module PulsarSdk
       async_request(base_cmd)
     end
 
-    def receive
-      cmd, meta_and_payload = @received_message.pop
+    # if timeout is nil wait until get message
+    def receive(timeout = nil)
+      cmd, meta_and_payload = @received_message.pop(timeout)
+
+      return if cmd.nil?
 
       decoder = PulsarSdk::Protocol::Structure.new(meta_and_payload)
       message = decoder.decode
