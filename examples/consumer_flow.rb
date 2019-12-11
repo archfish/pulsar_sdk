@@ -1,10 +1,12 @@
 opts = PulsarSdk::Options::Connection.new(logical_addr: 'pulsar://pulsar.reocar.lan')
 
 consumer_opts = PulsarSdk::Options::Consumer.new(
-  topic: 'persistent://rental_car/orders/created'
+  topic: 'persistent://rental_car/orders/created',
+  prefetch: 100
 )
 client = PulsarSdk::Client.create(opts)
 consumer = client.subscribe(consumer_opts)
+consumer.flow
 
 # blocking until message arrived
 _cmd, msg = consumer.receive
@@ -13,8 +15,8 @@ _cmd, msg = consumer.receive
 _cmd, msg = consumer.receive(2)
 # check if there is a message
 if msg.nil?
-  # recall flow get 100 message
-  consumer.flow(100)
+  # recall flow get another 100 message
+  consumer.flow
   _cmd, msg = consumer.receive(2)
 end
 

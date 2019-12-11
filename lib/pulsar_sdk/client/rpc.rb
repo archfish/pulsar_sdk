@@ -46,7 +46,6 @@ module PulsarSdk
         # FIXME check if connection ready
         consumer = PulsarSdk::Consumer.new(self, opts)
         consumer.set_handler!
-        consumer.flow(opts.prefetch)
 
         consumer
       end

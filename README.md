@@ -38,7 +38,8 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
 
 ## Features
 
-- [x] Connection establishment
+- [] Connection
+  - [x] Establishment
   - [ ] TLS connection
   - [ ] Authentication
 - [x] Producer
@@ -52,7 +53,9 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
   - [x] Flow control
   - [x] Ack
   - [x] Message Redelivery
+  - [x] Listen
   - [ ] [Dead Letter Topic][4]
+  - [ ] Partitioned
 - [ ] Keep alive
   - [x] handle ping command
   - [ ] send ping command
