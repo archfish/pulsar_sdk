@@ -51,18 +51,19 @@ module PulsarSdk
 
         mutex.synchronize do
           if timeout.nil?
-            while @map.empty?
+            while !@map.has_key?(id)
               signal.wait(mutex)
             end
           elsif @map.empty? && timeout != 0
             timeout_at = TimeX.now.to_f + timeout
-            while @map.empty? && (res = timeout_at - TimeX.now.to_f) > 0
+            while !@map.has_key?(id) && (res = timeout_at - TimeX.now.to_f) > 0
               signal.wait(mutex, res)
             end
           end
         end
 
         @mutex.synchronize do
+          @wait.delete id
           @map.delete id
         end
       end

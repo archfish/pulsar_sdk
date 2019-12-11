@@ -6,7 +6,6 @@ consumer_opts = PulsarSdk::Options::Consumer.new(
 )
 client = PulsarSdk::Client.create(opts)
 consumer = client.subscribe(consumer_opts)
-consumer.flow
 
 #================Manual ack================#
 consumer.listen do |cmd, msg|
