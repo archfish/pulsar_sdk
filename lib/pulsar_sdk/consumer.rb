@@ -5,6 +5,11 @@ module PulsarSdk
       raise "opts expected a PulsarSdk::Options::Consumer got #{opts.class}" unless opts.is_a?(PulsarSdk::Options::Consumer)
 
       @topic = opts.topic
+
+      @prefetch = opts.prefetch
+      @fetched = 0
+      @capacity = 0
+
       @conn = client.connection(*client.lookup(@topic))
       @seq_generator = SeqGenerator.new(@conn.seq_generator)
 
@@ -36,15 +41,17 @@ module PulsarSdk
       true
     end
 
-    def flow(batch)
+    def flow
       base_cmd = Pulsar::Proto::BaseCommand.new(
         type: Pulsar::Proto::BaseCommand::Type::FLOW,
         flow: Pulsar::Proto::CommandFlow.new(
-          messagePermits: batch
+          messagePermits: @prefetch
         )
       )
 
       sync_request(base_cmd)
+
+      @capacity += @prefetch
     end
 
     def subscription
@@ -73,8 +80,35 @@ module PulsarSdk
         topic: @topic,
         command_handler: command_handler
       )
-
+      @fetched += 1
       [cmd, message]
+    end
+
+    def listen(autoack = false)
+      raise 'listen require passing a block!!' if !block_given?
+
+      loop do
+        flow if all_readed?
+
+        cmd, msg = receive
+
+        result = yield cmd, msg
+
+        if autoack && result == false
+          msg.nack
+          next
+        end
+
+        msg.ack if autoack
+
+        if !msg.confirmed?
+          puts "WARN: message was not confiremed! message_id: #{msg.message_id}"
+        end
+      end
+    end
+
+    def all_readed?
+      @capacity <= @fetched
     end
 
     def close
@@ -96,14 +130,25 @@ module PulsarSdk
     private
     def async_request(cmd)
       cmd.seq_generator = @seq_generator
-      @received_message.clear if cmd.typeof_redeliver_unacknowledged_messages?
+
+      # NOTE nack will redelivery message from current message cursor
+      pop_all if cmd.typeof_redeliver_unacknowledged_messages?
 
       @conn.request(cmd)
     end
 
     def sync_request(cmd)
       cmd.seq_generator = @seq_generator
+
+      # NOTE nack will redelivery message from current message cursor
+      pop_all if cmd.typeof_redeliver_unacknowledged_messages?
+
       @conn.request(cmd, nil, true)
+    end
+
+    def pop_all
+      while receive(0)
+      end
     end
 
     class ReceivedQueue < PulsarSdk::Tweaks::TimeoutQueue; end

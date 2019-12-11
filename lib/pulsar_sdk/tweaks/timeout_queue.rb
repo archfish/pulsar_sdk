@@ -20,6 +20,10 @@ module PulsarSdk
         end
       end
 
+      def size
+        @receive_queue.size
+      end
+
       # timeout 数字，单位秒
       def pop(timeout = nil)
         @mutex.synchronize do

@@ -29,6 +29,12 @@ module PulsarSdk
         )
 
         command_handler.call(base_cmd)
+        @confirmed = true
+      end
+
+      # 检查是否有确认，无论是ack还是nack都算是确认
+      def confirmed?
+        !!@confirmed
       end
 
       # NOTE 这个消息之后的所有消息都会重新发送回来，导致consumer中消息队列内容重复了
@@ -43,6 +49,7 @@ module PulsarSdk
         )
 
         command_handler.call(base_cmd)
+        @confirmed = true
       end
     end
   end
