@@ -36,6 +36,7 @@ module PulsarSdk
       # TODO get receipt by sequence_id
       def receipt
         receipt_ = @receipt_queue.pop.first
+        return if receipt_.nil?
 
         if block_given?
           yield receipt_
@@ -52,6 +53,8 @@ module PulsarSdk
         execute(base_cmd)
 
         unbind_handler!
+
+        @receipt_queue.close
       end
 
       private

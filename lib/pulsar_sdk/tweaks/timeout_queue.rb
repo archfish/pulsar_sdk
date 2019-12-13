@@ -5,6 +5,7 @@ module PulsarSdk
         @mutex = Mutex.new
         @receive_queue = Queue.new
         @received = ConditionVariable.new
+        @closed = false
       end
 
       def add(*args)
@@ -28,18 +29,23 @@ module PulsarSdk
       def pop(timeout = nil)
         @mutex.synchronize do
           if timeout.nil?
-            while @receive_queue.empty?
+            while !@closed && @receive_queue.empty?
               @received.wait(@mutex)
             end
           elsif @receive_queue.empty? && timeout != 0
             timeout_at = TimeX.now.to_f + timeout
-            while @receive_queue.empty? && (res = timeout_at - TimeX.now.to_f) > 0
+            while !@closed && @receive_queue.empty? && (res = timeout_at - TimeX.now.to_f) > 0
               @received.wait(@mutex, res)
             end
           end
 
           @receive_queue.pop if !@receive_queue.empty?
         end
+      end
+
+      def close
+        @closed = true
+        @received.signal
       end
     end
   end
