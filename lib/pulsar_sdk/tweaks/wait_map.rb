@@ -6,6 +6,7 @@ module PulsarSdk
         @map = {}
 
         @wait = {}
+        @closed = false
       end
 
       def add(id, value)
@@ -51,12 +52,12 @@ module PulsarSdk
 
         mutex.synchronize do
           if timeout.nil?
-            while !@map.has_key?(id)
+            while !@closed && !@map.has_key?(id)
               signal.wait(mutex)
             end
           elsif @map.empty? && timeout != 0
             timeout_at = TimeX.now.to_f + timeout
-            while !@map.has_key?(id) && (res = timeout_at - TimeX.now.to_f) > 0
+            while !@closed && !@map.has_key?(id) && (res = timeout_at - TimeX.now.to_f) > 0
               signal.wait(mutex, res)
             end
           end
@@ -65,6 +66,14 @@ module PulsarSdk
         @mutex.synchronize do
           @wait.delete id
           @map.delete id
+        end
+      end
+
+      def close
+        @closed = true
+        @wait.each do |_, v|
+          _, signal = v
+          signal.signal
         end
       end
     end

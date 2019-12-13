@@ -1,9 +1,11 @@
 opts = PulsarSdk::Options::Connection.new(logical_addr: 'pulsar://pulsar.reocar.lan')
 
+# if you want listen stop when no message in sometime, just set listen_wait
 consumer_opts = PulsarSdk::Options::Consumer.new(
   topic: 'persistent://rental_car/orders/created',
   prefetch: 1
 )
+
 client = PulsarSdk::Client.create(opts)
 consumer = client.subscribe(consumer_opts)
 

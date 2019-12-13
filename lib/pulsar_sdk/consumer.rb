@@ -10,6 +10,8 @@ module PulsarSdk
       @fetched = 0
       @capacity = 0
 
+      @listen_wait = opts.listen_wait
+
       @conn = client.connection(*client.lookup(@topic))
       @seq_generator = SeqGenerator.new(@conn.seq_generator)
 
@@ -18,6 +20,8 @@ module PulsarSdk
       @subscription_name = opts.subscription_name
 
       @received_message = ReceivedQueue.new
+
+      @stoped = false
 
       base_cmd = Pulsar::Proto::BaseCommand.new(
         type: Pulsar::Proto::BaseCommand::Type::SUBSCRIBE,
@@ -88,9 +92,11 @@ module PulsarSdk
       raise 'listen require passing a block!!' if !block_given?
 
       loop do
+        return if @stoped
         flow if all_readed?
 
-        cmd, msg = receive
+        cmd, msg = receive(@listen_wait)
+        next if msg.nil?
 
         result = yield cmd, msg
 
@@ -121,6 +127,9 @@ module PulsarSdk
       sync_request(base_cmd)
 
       remove_handler!
+
+      @stoped = true
+      @received_message.close
     end
 
     def command_handler

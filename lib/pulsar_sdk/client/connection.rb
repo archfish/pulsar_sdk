@@ -302,8 +302,6 @@ module PulsarSdk
         end
       end
 
-      class EventHandler < ::PulsarSdk::Tweaks::WaitMap; end
-
       class ConsumerHandler < ::PulsarSdk::Tweaks::WaitMap; end
 
       class ProducerHandler < ::PulsarSdk::Tweaks::WaitMap; end
