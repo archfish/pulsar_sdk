@@ -118,6 +118,8 @@ module PulsarSdk
     end
 
     def close
+      return if @stoped
+
       base_cmd = Pulsar::Proto::BaseCommand.new(
         type: Pulsar::Proto::BaseCommand::Type::CLOSE_CONSUMER,
         close_consumer: Pulsar::Proto::CommandCloseConsumer.new(
