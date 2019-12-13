@@ -96,7 +96,7 @@ module PulsarSdk
         flow if all_readed?
 
         cmd, msg = receive(@listen_wait)
-        next if msg.nil?
+        return if msg.nil?
 
         result = yield cmd, msg
 
