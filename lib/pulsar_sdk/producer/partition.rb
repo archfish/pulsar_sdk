@@ -13,6 +13,8 @@ module PulsarSdk
 
         @receipt_queue = ReceiptQueue.new
 
+        @stoped = false
+
         init_producer(@topic)
       end
 
@@ -46,6 +48,8 @@ module PulsarSdk
       end
 
       def close
+        return if @stoped
+
         base_cmd = Pulsar::Proto::BaseCommand.new(
           type: Pulsar::Proto::BaseCommand::Type::CLOSE_PRODUCER,
           close_producer: Pulsar::Proto::CommandCloseProducer.new
@@ -53,6 +57,8 @@ module PulsarSdk
         execute(base_cmd)
 
         unbind_handler!
+
+        @stoped = true
 
         @receipt_queue.close
       end
