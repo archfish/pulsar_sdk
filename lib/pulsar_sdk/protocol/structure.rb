@@ -29,12 +29,22 @@ module PulsarSdk
           metadata = read_metadata
         end
 
+        msg = read_remaining
+
+        # NOTE 同为Ruby SDK时可以根据Content-Type预先还原
+        # 复杂类型依旧为string，需要特别注意
+        metadata.properties.each do |x|
+          next unless x.key.to_s =~ /Content-Type/i
+          next unless x.value.to_s =~ /json/i
+          msg = JSON.parse(msg)
+        end
+
         message.assign_attributes(
           publish_time: metadata.publish_time,
           event_time: metadata.event_time,
           partition_key: metadata.partition_key,
           properties: metadata.properties,
-          payload: read_remaining
+          payload: msg
         )
 
         message

@@ -76,8 +76,8 @@ module PulsarSdk
 
       return if cmd.nil?
 
-      decoder = PulsarSdk::Protocol::Structure.new(meta_and_payload)
-      message = decoder.decode
+      message = PulsarSdk::Protocol::Structure.new(meta_and_payload).decode
+
       message.assign_attributes(
         message_id: cmd.message&.message_id,
         consumer_id: cmd.message&.consumer_id,

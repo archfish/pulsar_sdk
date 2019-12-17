@@ -38,7 +38,7 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
 
 ## Features
 
-- [] Connection
+- [ ] Connection
   - [x] Establishment
   - [ ] TLS connection
   - [ ] Authentication
