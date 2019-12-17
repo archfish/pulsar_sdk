@@ -16,7 +16,7 @@ module PulsarSdk
       [:request_id, :consumer_id, :producer_id, :sequence_id].each do |x|
         define_method "set_#{x}" do
           if self.seq_generator.nil?
-            puts "ERROR: seq_generator was not set!! #{__method__} has no effect"
+            PulsarSdk.logger.warn(__method__){"seq_generator was not set!! action has no effect"}
             return
           end
 

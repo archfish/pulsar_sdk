@@ -1,4 +1,5 @@
 require 'pulsar_sdk/tweaks/assign_attributes'
+require 'pulsar_sdk/tweaks/clean_inspect'
 require 'pulsar_sdk/tweaks/base_command'
 require 'pulsar_sdk/tweaks/time_at_microsecond'
 require 'pulsar_sdk/tweaks/timeout_queue'

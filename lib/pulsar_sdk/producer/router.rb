@@ -1,6 +1,8 @@
 module PulsarSdk
   module Producer
     class Router
+      prepend ::PulsarSdk::Tweaks::CleanInspect
+
       def initialize(scheme = :string_hash)
         case scheme.to_sym
         when :string_hash

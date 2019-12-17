@@ -62,7 +62,7 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
 - [ ] Service discovery
   - [x] Topic lookup
   - [x] Partitioned topics discovery
-- [ ] Log Optimization
+- [x] Log Optimization
 - [x] Connection pool
 - [ ] Unit Test
 - [x] Thread safe
@@ -72,7 +72,7 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
 
 ## WIP
 
-- Log Optimization
+- Dead Letter Topic
 
 [1]: https://github.com/apache/pulsar/wiki/PIP-26%3A-Delayed-Message-Delivery "PIP 26: Delayed Message Delivery"
 [2]: https://pulsar.apache.org/docs/en/develop-binary-protocol/ "Pulsar binary protocol specification"

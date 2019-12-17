@@ -1,6 +1,8 @@
 module PulsarSdk
   module Client
     class Rpc
+      prepend ::PulsarSdk::Tweaks::CleanInspect
+
       def initialize(opts)
         raise "opts expected a PulsarSdk::Options::Connection got #{opts.class}" unless opts.is_a?(PulsarSdk::Options::Connection)
 
