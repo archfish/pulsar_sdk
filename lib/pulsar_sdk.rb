@@ -1,4 +1,5 @@
 require 'logger'
+require 'json'
 require 'protobuf/pulsar_api.pb'
 require "pulsar_sdk/version"
 require 'pulsar_sdk/tweaks'

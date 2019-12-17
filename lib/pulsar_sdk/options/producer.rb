@@ -2,6 +2,7 @@ module PulsarSdk
   module Options
     class Producer < Base
       attr_accessor :topic, :name, :router
+      attr_accessor :schema # TODO
 
       private
       def set_default
