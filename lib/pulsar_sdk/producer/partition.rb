@@ -1,6 +1,8 @@
 module PulsarSdk
   module Producer
     class Partition
+      prepend ::PulsarSdk::Tweaks::CleanInspect
+
       def initialize(client, opts)
         @topic = opts.topic
 

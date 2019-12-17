@@ -10,7 +10,7 @@ module PulsarSdk
         pmr = topic_metadata
 
         if !success_response?(pmr)
-          puts "ERROR: get topic partitioned metadata failed, #{pmr.error}: #{pmr.message}"
+          PulsarSdk.logger.error(__method__){"Get topic partitioned metadata failed, #{pmr.error}: #{pmr.message}"}
           return []
         end
 

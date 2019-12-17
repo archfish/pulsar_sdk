@@ -1,6 +1,8 @@
 module PulsarSdk
   module Producer
     class Manager
+      prepend ::PulsarSdk::Tweaks::CleanInspect
+
       def initialize(client, opts)
         @producers = init_producer_by(client, opts)
         @router = opts.router

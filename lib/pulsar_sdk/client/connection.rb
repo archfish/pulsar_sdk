@@ -3,6 +3,8 @@ require 'socket'
 module PulsarSdk
   module Client
     class Connection
+      prepend ::PulsarSdk::Tweaks::CleanInspect
+
       CLIENT_NAME = "pulsar-client-#{PulsarSdk::VERSION}".freeze
       PROTOCOL_VER = Pulsar::Proto::ProtocolVersion::V13
 
@@ -106,8 +108,7 @@ module PulsarSdk
             rescue Errno::ETIMEDOUT
               # read timeout, do nothing
             rescue => e
-              puts "ERROR: reader exist, cause by #{e}"
-              puts "BACKTRACE: #{e.backtrace.join("\n")}"
+              PulsarSdk.logger.fatal("reader exist!!") {e}
               @state.closed!
             end
           end
@@ -172,12 +173,12 @@ module PulsarSdk
       end
 
       def handle_base_command(cmd, payload)
-        puts "INFO: handle_base_command: #{cmd.type}"
+        PulsarSdk.logger.debug(__method__){cmd.type}
         case
         when cmd.typeof_success?
           handle_response(cmd)
         when cmd.typeof_connected?
-          puts "#{cmd.type}: #{cmd.connected}"
+          PulsarSdk.logger.info(__method__){"#{cmd.type}: #{cmd.connected}"}
         when cmd.typeof_producer_success?
           handle_response(cmd)
         when cmd.typeof_lookup_response?
@@ -190,7 +191,7 @@ module PulsarSdk
         when cmd.typeof_partitioned_metadata_response?
           handle_response(cmd)
         when cmd.typeof_error?
-          puts "ERROR: #{cmd.error} \n #{cmd.message}"
+          PulsarSdk.logger.error(__method__){"#{cmd.error}: #{cmd.message}"}
         when cmd.typeof_close_producer?
         when cmd.typeof_close_consumer?
         when cmd.typeof_message?

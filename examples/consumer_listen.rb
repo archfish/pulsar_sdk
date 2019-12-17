@@ -11,8 +11,8 @@ consumer = client.subscribe(consumer_opts)
 
 #================Manual ack================#
 consumer.listen do |cmd, msg|
-  puts "cmd => #{cmd}"
-  puts "msg => #{msg}"
+  PulsarSdk.logger.info('cmd') {cmd}
+  PulsarSdk.logger.info('msg') {msg}
   msg.ack
 end
 
@@ -23,14 +23,14 @@ end
 
 # ack after process
 consumer.listen(true) do |cmd, msg|
-  puts "cmd => #{cmd}"
-  puts "msg => #{msg}"
+  PulsarSdk.logger.info('cmd') {cmd}
+  PulsarSdk.logger.info('msg') {msg}
 end
 
 # nack after process
 consumer.listen(true) do |cmd, msg|
-  puts "cmd => #{cmd}"
-  puts "msg => #{msg}"
+  PulsarSdk.logger.info('cmd') {cmd}
+  PulsarSdk.logger.info('msg') {msg}
   false
 end
 

@@ -13,16 +13,17 @@ client = PulsarSdk::Client.create(opts)
 th = Thread.new do
   @consumer.flow
   _cmd, msg = @consumer.receive
-  puts "msg: #{msg || 'stoped'}"
+  PulsarSdk.logger.info('msg') {msg || 'stoped'}
 end
 
 # =========stop listen============
 
 th = Thread.new do
   @consumer.listen do |cmd, msg|
-    puts "msg: #{msg}"
+    PulsarSdk.logger.info('msg') {msg}
   end
-  puts "stoped"
+
+  PulsarSdk.logger.info('stoped')
 end
 
 @consumer.close

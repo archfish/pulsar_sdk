@@ -1,6 +1,8 @@
 module PulsarSdk
   module Protocol
     class Structure
+      prepend ::PulsarSdk::Tweaks::CleanInspect
+
       # [MAGIC_NUMBER] [CHECKSUM] [METADATA_SIZE] [METADATA] [PAYLOAD]
       MAGIC_NUMBER = [0x0e, 0x01].pack('C*').freeze
       MAGIC_NUMBER_LEN = MAGIC_NUMBER.size

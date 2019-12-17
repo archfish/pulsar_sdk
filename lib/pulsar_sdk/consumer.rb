@@ -108,7 +108,7 @@ module PulsarSdk
         msg.ack if autoack
 
         if !msg.confirmed?
-          puts "WARN: message was not confiremed! message_id: #{msg.message_id}"
+          PulsarSdk.logger.warn('message was not confiremed') {msg.message_id}
         end
       end
     end

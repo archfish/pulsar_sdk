@@ -2,6 +2,7 @@ module PulsarSdk
   module Protocol
     class Message
       prepend ::PulsarSdk::Tweaks::AssignAttributes
+      prepend ::PulsarSdk::Tweaks::CleanInspect
 
       attr_accessor :publish_time, :event_time, :partition_key, :payload,
                     :message_id, :properties, :consumer_id, :topic

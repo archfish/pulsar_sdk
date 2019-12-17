@@ -1,6 +1,8 @@
 module PulsarSdk
   module Protocol
     class Reader
+      prepend ::PulsarSdk::Tweaks::CleanInspect
+
       FRAME_SIZE_LEN = 4
       CMD_SIZE_LEN = 4
 

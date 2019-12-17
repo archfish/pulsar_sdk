@@ -24,7 +24,7 @@ module PulsarSdk
         MAX_LOOKUP_TIMES.times do
           case Pulsar::Proto::CommandLookupTopicResponse::LookupType.resolve(resp.response)
           when Pulsar::Proto::CommandLookupTopicResponse::LookupType::Failed
-            puts "ERROR: Failed to lookup topic 「#{topic}」, #{resp.error}"
+            PulsarSdk.logger.error(__method__){"Failed to lookup topic 「#{topic}」, #{resp.error}"}
             break
           when Pulsar::Proto::CommandLookupTopicResponse::LookupType::Redirect
             logical_addr, physical_addr = extract_addr(resp)

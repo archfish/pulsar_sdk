@@ -1,7 +1,10 @@
 module PulsarSdk
   module Producer
     class Message
+      prepend ::PulsarSdk::Tweaks::CleanInspect
+
       attr_reader :metadata, :message, :key
+
       def initialize(msg, metadata = nil)
         # TODO check metadata type
         @message, @metadata = msg, metadata
