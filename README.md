@@ -72,9 +72,12 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
 
 ## WIP
 
+Catch up [Pulsar client feature matrix][5], current working on:
+
 - Dead Letter Topic
 
 [1]: https://github.com/apache/pulsar/wiki/PIP-26%3A-Delayed-Message-Delivery "PIP 26: Delayed Message Delivery"
 [2]: https://pulsar.apache.org/docs/en/develop-binary-protocol/ "Pulsar binary protocol specification"
 [3]: https://github.com/Envek/after_commit_everywhere "after commit everywhere"
 [4]: https://github.com/apache/pulsar/wiki/PIP-22:-Pulsar-Dead-Letter-Topic "PIP 22: Pulsar Dead Letter Topic"
+[5]: https://github.com/apache/pulsar/wiki/Client-Features-Matrix "Pulsar client feature matrix"

@@ -24,9 +24,10 @@ producer.execute(base_cmd, p_msg)
 producer.execute_async(base_cmd, p_msg)
 
 # ++======发送消息后需要获取消息回执，因为回执与producer_id和request_id有关必须要知道真实的producer才能获取到======++
-real_producer = producer.real_producer(p_msg)
-real_producer.execute(base_cmd, p_msg)
-real_producer.receipt
+producer.real_producer(p_msg) do |producer_|
+  producer_.execute(base_cmd, p_msg)
+  producer_.receipt
+end
 
 producer.close
 
