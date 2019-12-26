@@ -4,23 +4,34 @@ module PulsarSdk
       prepend ::PulsarSdk::Tweaks::CleanInspect
 
       def initialize(client, opts)
+        @topic = opts.topic
         @producers = init_producer_by(client, opts)
         @router = opts.router
       end
 
       def execute(cmd, msg = nil, timeout = nil)
         raise "cmd expected a Pulsar::Proto::BaseCommand got #{cmd.class}" unless cmd.is_a?(Pulsar::Proto::BaseCommand)
-        real_producer(msg).execute(cmd, msg, timeout)
+        real_producer(msg) do |producer|
+          producer.execute(cmd, msg, timeout)
+        end
       end
 
       def execute_async(cmd, msg = nil)
         raise "cmd expected a Pulsar::Proto::BaseCommand got #{cmd.class}" unless cmd.is_a?(Pulsar::Proto::BaseCommand)
-        real_producer(msg).execute_async(cmd, msg)
+        real_producer(msg) do |producer|
+          producer.execute_async(cmd, msg)
+        end
       end
 
-      def real_producer(msg)
-        return @producers[0] if msg.nil?
-        @producers[@router.route(msg.key, @producers.size)]
+      def real_producer(msg, &block)
+        if @producers.size.zero?
+          PulsarSdk.logger.warn(__method__){"There is no available producer for topic: 「#{@topic}」, skipping action!"}
+          return
+        end
+
+        route_index = msg.nil? ? 0 : @router.route(msg.key, @producers.size)
+
+        yield @producers[route_index]
       end
 
       def close
@@ -31,7 +42,7 @@ module PulsarSdk
       def init_producer_by(client, opts)
         opts = opts.dup
 
-        topics = PulsarSdk::Protocol::PartitionedTopic.new(client, opts.topic).partitions
+        topics = PulsarSdk::Protocol::PartitionedTopic.new(client, @topic).partitions
         topics.map do |topic|
           opts.topic = topic
           PulsarSdk::Producer::Partition.new(client, opts)

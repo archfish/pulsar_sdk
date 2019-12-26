@@ -194,6 +194,7 @@ module PulsarSdk
           PulsarSdk.logger.error(__method__){"#{cmd.error}: #{cmd.message}"}
         when cmd.typeof_close_producer?
         when cmd.typeof_close_consumer?
+        when cmd.typeof_active_consumer_change?
         when cmd.typeof_message?
           handle_message(cmd, payload)
         when cmd.typeof_send_receipt?
