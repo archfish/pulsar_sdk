@@ -73,7 +73,7 @@ module PulsarSdk
         @closed = true
         @wait.each do |_, v|
           _, signal = v
-          signal.signal
+          signal.broadcast
         end
       end
     end

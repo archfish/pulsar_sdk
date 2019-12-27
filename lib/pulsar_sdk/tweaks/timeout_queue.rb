@@ -45,7 +45,7 @@ module PulsarSdk
 
       def close
         @closed = true
-        @received.signal
+        @received.broadcast
       end
     end
   end
