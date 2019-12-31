@@ -106,10 +106,6 @@ module PulsarSdk
         end
 
         msg.ack if autoack
-
-        if !msg.confirmed?
-          PulsarSdk.logger.warn('message was not confiremed') {msg.message_id}
-        end
       end
     end
 
