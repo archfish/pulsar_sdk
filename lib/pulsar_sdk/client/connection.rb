@@ -173,7 +173,7 @@ module PulsarSdk
       end
 
       def handle_base_command(cmd, payload)
-        PulsarSdk.logger.debug(__method__){cmd.type}
+        PulsarSdk.logger.debug(__method__){cmd.type} unless cmd.typeof_ping?
         case
         when cmd.typeof_success?
           handle_response(cmd)
