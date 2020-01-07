@@ -25,14 +25,21 @@ module PulsarSdk
         raise 'logical_addr and physical_addr both empty!' if id.empty?
 
         conn = @pool.find(id)
-        return conn unless conn.nil?
-        opts = @options.dup
-        opts.assign_attributes(
-          logical_addr: logical_addr,
-          physical_addr: physical_addr
-        )
 
-        @pool.add(id, ::PulsarSdk::Client::Connection.establish(opts))
+        if conn.nil? || conn.closed?
+          # REMOVE closed conncetion from pool
+          @pool.delete(id, 0.01) unless conn.nil?
+
+          opts = @options.dup
+          opts.assign_attributes(
+            logical_addr: logical_addr,
+            physical_addr: physical_addr
+          )
+
+          conn = @pool.add(id, ::PulsarSdk::Client::Connection.establish(opts))
+        end
+
+        conn
       end
 
       def close
