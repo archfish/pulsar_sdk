@@ -23,10 +23,6 @@ module PulsarSdk
 
         @seq_generator = SeqGenerator.new
 
-        @mutex = Mutex.new
-        @receive_queue = Queue.new
-        @received = ConditionVariable.new
-
         @consumer_handlers = ConsumerHandler.new
         @producer_handlers = ProducerHandler.new
         @response_container = ResponseContainer.new
@@ -126,10 +122,12 @@ module PulsarSdk
       end
 
       def closed?
-        @socket.closed?
+        @state.closed?
       end
 
       def request(cmd, msg = nil, async = false, timeout = nil)
+        raise 'connection was closed!' if closed?
+
         cmd.seq_generator ||= @seq_generator
 
         # NOTE try to auto set *_id
@@ -203,7 +201,7 @@ module PulsarSdk
           handle_ping
         when cmd.typeof_pong?
         else
-          @socket.close
+          close
           raise "Received invalid command type: #{cmd.type}"
         end
 
