@@ -185,6 +185,7 @@ module PulsarSdk
           handle_response(cmd)
         when cmd.typeof_consumer_stats_response?
         when cmd.typeof_get_topics_of_namespace_response?
+          handle_response(cmd)
         when cmd.typeof_get_schema_response?
         when cmd.typeof_partitioned_metadata_response?
           handle_response(cmd)

@@ -55,7 +55,8 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
   - [x] Message Redelivery
   - [x] Listen
   - [ ] [Dead Letter Topic][4]
-  - [ ] Partitioned
+  - [x] Partitioned
+  - [x] Topic with regexp (in same namespace)
 - [ ] Keep alive
   - [x] handle ping command
   - [ ] send ping command
