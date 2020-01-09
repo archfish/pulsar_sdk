@@ -1,7 +1,9 @@
 module PulsarSdk
   module Options
     class Consumer < Base
-      attr_accessor :topic, :name, :subscription_name, :subscription_type, :prefetch,
+      attr_accessor :topic, :topics, :topics_pattern,
+                    :name, :subscription_name, :subscription_type,
+                    :prefetch,
                     :listen_wait
 
       def subscription_type
