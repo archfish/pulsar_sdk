@@ -42,10 +42,10 @@ module PulsarSdk
       def init_producer_by(client, opts)
         opts = opts.dup
 
-        topics = PulsarSdk::Protocol::PartitionedTopic.new(client, @topic).partitions
+        topics = client.partition_topics(@topic)
         topics.map do |topic|
           opts.topic = topic
-          PulsarSdk::Producer::Partition.new(client, opts)
+          PulsarSdk::Producer::Base.new(client, opts)
         end
       end
     end

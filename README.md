@@ -49,19 +49,21 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
   - [x] Get SendReceipt
   - [x] Close Producer
   - [ ] [Deliver message after AR transaction commit][3]
+  - [x] Partitioned topics
 - [ ] Consumer
   - [x] Flow control
   - [x] Ack
   - [x] Message Redelivery
   - [x] Listen
+  - [ ] Reader
   - [ ] [Dead Letter Topic][4]
-  - [ ] Partitioned
+  - [x] Partitioned topics
+  - [x] Topic with regexp (in same namespace)
 - [ ] Keep alive
   - [x] handle ping command
   - [ ] send ping command
 - [ ] Service discovery
   - [x] Topic lookup
-  - [x] Partitioned topics discovery
 - [x] Log Optimization
 - [x] Connection pool
 - [ ] Unit Test
