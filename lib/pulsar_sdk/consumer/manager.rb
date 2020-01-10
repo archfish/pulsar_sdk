@@ -9,9 +9,9 @@ module PulsarSdk
 
         @topic = opts.topic
 
-        @received_message = ReceivedQueue.new
+        @message_tracker = ::PulsarSdk::Consumer::MessageTracker.new(opts.redelivery_delay)
 
-        @consumers = init_consumer_by(client, @received_message, opts)
+        @consumers = init_consumer_by(client, opts)
 
         @stoped = false
       end
@@ -32,24 +32,7 @@ module PulsarSdk
 
       # if timeout is nil wait until get message
       def receive(timeout = nil)
-        cmd, meta_and_payload, command_handler = @received_message.pop(timeout)
-
-        return if cmd.nil?
-
-        message = PulsarSdk::Protocol::Structure.new(meta_and_payload).decode
-
-        real_consumer = @consumers.find{|x| x.consumer_id == message.consumer_id}
-
-        message.assign_attributes(
-          message_id: cmd.message&.message_id,
-          consumer_id: cmd.message&.consumer_id,
-          topic: real_consumer&.topic,
-          command_handler: command_handler
-        )
-
-        real_consumer&.increase_fetched
-
-        [cmd, message]
+        @message_tracker.shift(timeout)
       end
 
       def listen(autoack = false)
@@ -78,11 +61,11 @@ module PulsarSdk
         @consumers.each(&:close)
         @stoped = true
 
-        @received_message.close
+        @message_tracker.close
       end
 
       private
-      def init_consumer_by(client, received_message, opts)
+      def init_consumer_by(client, opts)
         topics = []
 
         case
@@ -117,14 +100,13 @@ module PulsarSdk
             opts_ = opts.dup
 
             opts_.topic = x
-            PulsarSdk::Consumer::Base.new(client, received_message, opts_).tap do |consumer|
+            PulsarSdk::Consumer::Base.new(client, @message_tracker, opts_).tap do |consumer|
               consumer.set_handler!
+              @message_tracker.add_consumer(consumer)
             end
           end
         end
       end
-
-      class ReceivedQueue < PulsarSdk::Tweaks::TimeoutQueue; end
     end
   end
 end

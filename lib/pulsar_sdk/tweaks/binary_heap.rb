@@ -44,7 +44,7 @@ module PulsarSdk
         return [] if ary.nil? || ary.empty?
 
         heap = BinaryHeap.new(&(@cmp))
-        heap.insert *ary
+        heap.insert(*ary)
         heap.data
       end
 
