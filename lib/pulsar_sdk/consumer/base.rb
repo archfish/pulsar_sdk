@@ -3,7 +3,7 @@ module PulsarSdk
     class Base
       attr_reader :consumer_id, :topic
 
-      def initialize(client, received_message, opts)
+      def initialize(client, message_tracker, opts)
         @topic = opts.topic
 
         @prefetch = opts.prefetch
@@ -19,7 +19,7 @@ module PulsarSdk
         @consumer_name = opts.name
         @subscription_name = opts.subscription_name
 
-        @received_message = received_message
+        @message_tracker = message_tracker
 
         base_cmd = Pulsar::Proto::BaseCommand.new(
           type: Pulsar::Proto::BaseCommand::Type::SUBSCRIBE,
@@ -34,7 +34,7 @@ module PulsarSdk
       end
 
       def set_handler!
-        handler = Proc.new { |cmd, meta_and_payload| @received_message.add(cmd, meta_and_payload, command_handler) }
+        handler = Proc.new { |cmd, meta_and_payload| @message_tracker.receive(cmd, meta_and_payload) }
         @conn.consumer_handlers.add(@consumer_id, handler)
       end
 
@@ -89,7 +89,6 @@ module PulsarSdk
         remove_handler!
       end
 
-      private
       def async_request(cmd)
         cmd.seq_generator = @seq_generator
 
@@ -102,9 +101,7 @@ module PulsarSdk
         @conn.request(cmd, nil, true)
       end
 
-      def command_handler
-        Proc.new{|cmd| async_request(cmd)}
-      end
+      private
 
       # NOTE keep consumer_id and sequence_id static
       class SeqGenerator
