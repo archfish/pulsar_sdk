@@ -1,11 +1,5 @@
-opts = PulsarSdk::Options::Connection.new(logical_addr: 'pulsar://pulsar.reocar.lan')
-
-producer_opts = PulsarSdk::Options::Producer.new(
-  topic: 'persistent://rental_car/orders/created'
-)
-
-client = PulsarSdk::Client.create(opts)
-producer = client.create_producer(producer_opts)
+client = PulsarSdk.create_client(logical_addr: 'pulsar://pulsar.reocar.lan')
+producer = PulsarSdk.create_producer(client, topic: 'persistent://rental_car/orders/created')
 
 # ++======测试普通消息======++
 base_cmd = Pulsar::Proto::BaseCommand.new(
