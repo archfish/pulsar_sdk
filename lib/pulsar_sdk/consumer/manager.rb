@@ -57,7 +57,8 @@ module PulsarSdk
       end
 
       def close
-        return unless @stoped
+        PulsarSdk.logger.debug(__method__){"current @stoped #{@stoped} close now!"}
+        return if @stoped
         @consumers.each(&:close)
         @stoped = true
 
