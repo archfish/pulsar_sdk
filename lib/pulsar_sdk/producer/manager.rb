@@ -45,7 +45,9 @@ module PulsarSdk
         topics = client.partition_topics(@topic)
         topics.map do |topic|
           opts.topic = topic
-          PulsarSdk::Producer::Base.new(client, opts)
+          PulsarSdk::Producer::Base.new(client, opts).tap do |base|
+            base.grab_cnx
+          end
         end
       end
     end
