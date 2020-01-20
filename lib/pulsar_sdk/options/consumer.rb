@@ -4,7 +4,7 @@ module PulsarSdk
       attr_accessor :topic, :topics, :topics_pattern,
                     :name, :subscription_name, :subscription_type,
                     :prefetch, :redelivery_delay,
-                    :listen_wait
+                    :listen_wait, :replicate_subscription_state
 
       def subscription_type
         sub_type = @subscription_type.to_sym
@@ -25,6 +25,7 @@ module PulsarSdk
         self.redelivery_delay = 60
         # 记录预取数量
         self.prefetch = 1000
+        self.replicate_subscription_state = true
       end
     end
   end

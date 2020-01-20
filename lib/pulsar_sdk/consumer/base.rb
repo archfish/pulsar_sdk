@@ -4,43 +4,28 @@ module PulsarSdk
       attr_reader :consumer_id, :topic
 
       def initialize(client, message_tracker, opts)
-        @topic = opts.topic
+        @opts = opts
+        @topic = @opts.topic
+        @message_tracker = message_tracker
+        @client = client
+      end
 
-        @prefetch = opts.prefetch
+      def grab_cnx
+        @prefetch = @opts.prefetch
         @fetched = 0
         @capacity = 0
 
-        @listen_wait = opts.listen_wait
+        @conn = @client.connection(*@client.lookup(@topic))
+        @established = true
 
-        @conn = client.connection(*client.lookup(@topic))
         @seq_generator = SeqGenerator.new(@conn.seq_generator)
 
         @consumer_id = @seq_generator.new_consumer_id
-        @consumer_name = opts.name
-        @subscription_name = opts.subscription_name
+        @consumer_name = @opts.name
+        @subscription_name = @opts.subscription_name
 
-        @message_tracker = message_tracker
-
-        base_cmd = Pulsar::Proto::BaseCommand.new(
-          type: Pulsar::Proto::BaseCommand::Type::SUBSCRIBE,
-          subscribe: Pulsar::Proto::CommandSubscribe.new(
-            topic: @topic,
-            subscription: opts.subscription_name,
-            subType: opts.subscription_type,
-            consumer_name: @consumer_name
-          )
-        )
-        sync_request(base_cmd)
-      end
-
-      def set_handler!
-        handler = Proc.new { |cmd, meta_and_payload| @message_tracker.receive(cmd, meta_and_payload) }
-        @conn.consumer_handlers.add(@consumer_id, handler)
-      end
-
-      def remove_handler!
-        @conn.consumer_handlers.delete(@consumer_id)
-        true
+        result = init_consumer
+        @consumer_name = result.consumerName unless result.nil?
       end
 
       def increase_fetched(n = 1)
@@ -55,7 +40,7 @@ module PulsarSdk
           )
         )
 
-        sync_request(base_cmd)
+        execute(base_cmd)
 
         @capacity += @prefetch
       end
@@ -69,7 +54,7 @@ module PulsarSdk
           type: Pulsar::Proto::BaseCommand::Type::UNSUBSCRIBE,
           unsubscribe: Pulsar::Proto::CommandUnsubscribe.new
         )
-        async_request(base_cmd)
+        execute_async(base_cmd)
       end
 
       def flow_if_need
@@ -84,24 +69,59 @@ module PulsarSdk
             consumer_id: @consumer_id
           )
         )
-        sync_request(base_cmd)
+        execute(base_cmd) if @established
 
         remove_handler!
       end
 
-      def async_request(cmd)
-        cmd.seq_generator = @seq_generator
-
-        @conn.request(cmd)
+      def execute(cmd)
+        write(cmd)
       end
 
-      def sync_request(cmd)
-        cmd.seq_generator = @seq_generator
-
-        @conn.request(cmd, nil, true)
+      def execute_async(cmd)
+        write(cmd, nil, true)
       end
 
       private
+      def write(cmd, *args)
+        grab_cnx unless @established
+        cmd.seq_generator = @seq_generator
+
+        @conn.request(cmd, *args)
+      end
+
+      def bind_handler!
+        handler = Proc.new do |cmd, meta_and_payload|
+          cmd.nil? ? (@established = false) : @message_tracker.receive(cmd, meta_and_payload)
+        end
+        @conn.consumer_handlers.add(@consumer_id, handler)
+      end
+
+      def remove_handler!
+        @conn.consumer_handlers.delete(@consumer_id)
+
+        true
+      end
+
+      def init_consumer
+        bind_handler!
+
+        base_cmd = Pulsar::Proto::BaseCommand.new(
+          type: Pulsar::Proto::BaseCommand::Type::SUBSCRIBE,
+          subscribe: Pulsar::Proto::CommandSubscribe.new(
+            topic: @opts.topic,
+            subscription: @opts.subscription_name,
+            subType: @opts.subscription_type,
+            consumer_name: @consumer_name,
+            replicate_subscription_state: @opts.replicate_subscription_state
+          )
+        )
+        result = execute(base_cmd)
+
+        @message_tracker.add_consumer(self)
+
+        result.consumerStatsResponse
+      end
 
       # NOTE keep consumer_id and sequence_id static
       class SeqGenerator

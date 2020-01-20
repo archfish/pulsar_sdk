@@ -8,7 +8,7 @@ module PulsarSdk
 
         @opts = opts
 
-        @cnx = ::PulsarSdk::Client::ConnectionPool.new(opts)
+        @cnx = ::PulsarSdk::Client::ConnectionPool.new(opts).tap {|x| x.run_checker}
 
         @producer_id = 0
         @consumer_id = 0

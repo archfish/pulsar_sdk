@@ -56,7 +56,7 @@ module PulsarSdk
               break if item[:ack_at] > Process.clock_gettime(Process::CLOCK_MONOTONIC)
               begin
                 PulsarSdk.logger.debug('acknowledge message'){"#{Process.clock_gettime(Process::CLOCK_MONOTONIC)}: #{item[:cmd].type} --> #{item[:ack_at]}"}
-                async_request(item[:cmd])
+                execute_async(item[:cmd])
                 @acknowledge_message.shift
               rescue => exp
                 PulsarSdk.logger.error('Error occur when acknowledge message'){exp}
@@ -76,10 +76,10 @@ module PulsarSdk
         end
       end
 
-      def async_request(cmd)
+      def execute_async(cmd)
         consumer = @consumers[cmd.get_consumer_id]
 
-        consumer.async_request(cmd)
+        consumer.execute_async(cmd)
       end
     end
   end

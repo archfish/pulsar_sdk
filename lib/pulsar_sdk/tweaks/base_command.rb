@@ -50,6 +50,13 @@ module PulsarSdk
         end
       end
 
+      def handle_ids
+        set_request_id
+        set_consumer_id
+        set_producer_id
+        set_sequence_id
+      end
+
       private
       def attribute_names
         self.class.descriptor.map(&:name)

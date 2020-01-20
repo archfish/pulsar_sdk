@@ -4,35 +4,32 @@ module PulsarSdk
       prepend ::PulsarSdk::Tweaks::CleanInspect
 
       def initialize(client, opts)
-        @topic = opts.topic
+        @opts = opts
+        @client = client
+      end
 
-        @conn = client.connection(*client.lookup(opts.topic))
+      def grab_cnx
+        topic = @opts.topic
+        @conn = @client.connection(*@client.lookup(topic))
+        @established = true
 
         @seq_generator = SeqGenerator.new(@conn.seq_generator)
         @producer_id = @seq_generator.new_producer_id
 
-        @producer_name = [opts.name, @producer_id].join('.')
+        @producer_name = [@opts.name, @producer_id].join('.')
 
         @receipt_queue = ReceiptQueue.new
 
         @stoped = false
 
-        init_producer(@topic)
+        @producer_name = init_producer(topic)
       end
 
       def execute(cmd, msg = nil, timeout = nil)
-        unless msg.nil? || msg.is_a?(PulsarSdk::Producer::Message)
-          raise "msg expected a PulsarSdk::Producer::Message got #{msg.class}"
-        end
-
         write(cmd, msg, false, timeout)
       end
 
       def execute_async(cmd, msg = nil)
-        unless msg.nil? || msg.is_a?(PulsarSdk::Producer::Message)
-          raise "msg expected a PulsarSdk::Producer::Message got #{msg.class}"
-        end
-
         write(cmd, msg, true)
       end
 
@@ -56,7 +53,7 @@ module PulsarSdk
           type: Pulsar::Proto::BaseCommand::Type::CLOSE_PRODUCER,
           close_producer: Pulsar::Proto::CommandCloseProducer.new
         )
-        execute(base_cmd)
+        execute(base_cmd) if @established
 
         unbind_handler!
 
@@ -75,10 +72,17 @@ module PulsarSdk
             topic: topic
           )
         )
-        execute(base_cmd)
+        result = execute(base_cmd)
+        result.producer_success.producer_name
       end
 
       def write(cmd, msg, *args)
+        unless msg.nil? || msg.is_a?(PulsarSdk::Producer::Message)
+          raise "msg expected a PulsarSdk::Producer::Message got #{msg.class}"
+        end
+
+        grab_cnx unless @established
+
         cmd.seq_generator = @seq_generator
 
         unless msg.nil?
@@ -106,15 +110,19 @@ module PulsarSdk
       end
 
       def bind_handler!
-        handler = Proc.new { |send_receipt| @receipt_queue.add(send_receipt) }
+        handler = Proc.new do |send_receipt|
+          send_receipt.nil? ? (@established = false) : @receipt_queue.add(send_receipt)
+        end
         @conn.producer_handlers.add(@producer_id, handler)
       end
 
       def unbind_handler!
         @conn.producer_handlers.delete(@producer_id)
+
         true
       end
     end
+
     class ReceiptQueue < ::PulsarSdk::Tweaks::TimeoutQueue; end
 
     # NOTE keep producer_id and sequence_id static

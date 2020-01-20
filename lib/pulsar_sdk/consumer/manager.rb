@@ -9,6 +9,8 @@ module PulsarSdk
 
         @topic = opts.topic
 
+        @listen_wait = @opts.listen_wait
+
         @message_tracker = ::PulsarSdk::Consumer::MessageTracker.new(opts.redelivery_delay)
 
         @consumers = init_consumer_by(client, opts)
@@ -102,8 +104,7 @@ module PulsarSdk
 
             opts_.topic = x
             PulsarSdk::Consumer::Base.new(client, @message_tracker, opts_).tap do |consumer|
-              consumer.set_handler!
-              @message_tracker.add_consumer(consumer)
+              consumer.grab_cnx
             end
           end
         end
