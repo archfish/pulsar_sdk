@@ -36,6 +36,7 @@ module PulsarSdk
         metadata.properties.each do |x|
           next unless x.key.to_s =~ /Content-Type/i
           next unless x.value.to_s =~ /json/i
+          PulsarSdk.logger.info("#{self.class}::#{__method__}"){"Found json encode remark, parse JSON mesaage!"}
           msg = JSON.parse(msg)
         end
 

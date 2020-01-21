@@ -188,40 +188,59 @@ module PulsarSdk
 
       def handle_base_command(cmd, payload)
         PulsarSdk.logger.debug(__method__){cmd.type} unless cmd.typeof_ping?
+
         case
         when cmd.typeof_success?
           handle_response(cmd)
+
         when cmd.typeof_connected?
           PulsarSdk.logger.info(__method__){"#{cmd.type}: #{cmd.connected}"}
+
         when cmd.typeof_producer_success?
           handle_response(cmd)
+
         when cmd.typeof_lookup_response?
           handle_response(cmd)
+
         when cmd.typeof_get_last_message_id_response?
           handle_response(cmd)
+
         when cmd.typeof_consumer_stats_response?
           handle_response(cmd)
+
+        when cmd.typeof_reached_end_of_topic?
+          # TODO notify consumer no more message
+
         when cmd.typeof_get_topics_of_namespace_response?
           handle_response(cmd)
+
         when cmd.typeof_get_schema_response?
         when cmd.typeof_partitioned_metadata_response?
           handle_response(cmd)
+
         when cmd.typeof_error?
           PulsarSdk.logger.error(__method__){"#{cmd.error}: #{cmd.message}"}
+
         when cmd.typeof_close_producer?
           producer_id = cmd.close_producer.producer_id
           producer_handlers.find(producer_id)&.call
+
         when cmd.typeof_close_consumer?
           consumer_id = cmd.close_consumer.consumer_id
           consumer_handlers.find(consumer_id)&.call
+
         when cmd.typeof_active_consumer_change?
         when cmd.typeof_message?
           handle_message(cmd, payload)
+
         when cmd.typeof_send_receipt?
           handle_send_receipt(cmd)
+
         when cmd.typeof_ping?
           handle_ping
+
         when cmd.typeof_pong?
+
         else
           close
           raise "Received invalid command type: #{cmd.type}"
