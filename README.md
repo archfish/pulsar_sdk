@@ -11,13 +11,17 @@ See `examples`.
 ```shell
 #!/bin/sh
 
-PB_OUT="./lib/protobuf/"
+PB_PATH="./lib/protobuf/"
+PB_IN='pulsar_api.proto'
 PB_OUT_F='pulsar_api.pb.rb'
 
-mkdir -p ${PB_OUT}
+mkdir -p ${PB_PATH}
 
-protoc -I ${PULSAR_GIT}/pulsar-common/src/main/proto/ --ruby_out ${PB_OUT} PulsarApi.proto
-mv ${PB_OUT}PulsarApi_pb.rb ${PB_OUT}${PB_OUT_F}
+wget -O ${PB_PATH}${PB_IN} https://raw.githubusercontent.com/apache/pulsar/master/pulsar-common/src/main/proto/PulsarApi.proto
+
+# protoc -I ${PULSAR_GIT}/pulsar-common/src/main/proto/ --ruby_out ${PB_PATH} PulsarApi.proto
+protoc -I ${PB_PATH} --ruby_out ${PB_PATH} ${PB_IN}
+mv ${PB_PATH}pulsar_api_pb.rb ${PB_PATH}${PB_OUT_F}
 
 # fix pulsar.proto.ProtocolVersion error: invalid name `v0' for constant
 if [ $(uname) = 'Darwin' ]
@@ -27,13 +31,13 @@ fi
 
 for i in $(seq 0 15)
 do
-    sed -i ${suffix} "s;value :v$i, $i;value :V$i, $i;g" ${PB_OUT}${PB_OUT_F}
+    sed -i ${suffix} "s;value :v$i, $i;value :V$i, $i;g" ${PB_PATH}${PB_OUT_F}
 done
 
-rm -f ${PB_OUT}${PB_OUT_F}.pbbak
+rm -f ${PB_PATH}${PB_OUT_F}.pbbak
 
-protoc -I ${PULSAR_GIT}/pulsar-common/src/main/proto/ --ruby_out ${PB_OUT} PulsarMarkers.proto
-mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
+protoc -I ${PULSAR_GIT}/pulsar-common/src/main/proto/ --ruby_out ${PB_PATH} PulsarMarkers.proto
+mv ${PB_PATH}PulsarMarkers_pb.rb ${PB_PATH}pulsar_markers.pb.rb
 ```
 
 ## Features
@@ -42,27 +46,29 @@ mv ${PB_OUT}PulsarMarkers_pb.rb ${PB_OUT}pulsar_markers.pb.rb
   - [x] Establishment
   - [ ] TLS connection
   - [ ] Authentication
-- [x] Producer
+- [ ] Producer
   - [x] Message Delivery
-  - [ ] Batch Message Delivery
   - [x] [Delayed Message Delivery][1]
   - [x] Get SendReceipt
   - [x] Close Producer
-  - [ ] [Deliver message after AR transaction commit][3]
   - [x] Partitioned topics
+  - [ ] Batch Message Delivery
+  - [ ] Message Compression
+  - [ ] [Deliver message after AR transaction commit][3]
 - [ ] Consumer
   - [x] Flow control
   - [x] Ack
   - [x] Message Redelivery
   - [x] Listen
-  - [ ] Reader
-  - [ ] [Dead Letter Topic][4]
   - [x] Partitioned topics
   - [x] Topic with regexp (in same namespace)
-- [ ] Keep alive
+  - [ ] Reader
+  - [ ] [Dead Letter Topic][4]
+  - [ ] [Key Shared][6]
+- [x] Keep alive
   - [x] handle ping command
-  - [ ] send ping command
-- [ ] Service discovery
+  - [x] send ping command
+- [x] Service discovery
   - [x] Topic lookup
 - [x] Log Optimization
 - [x] Connection pool
@@ -83,3 +89,4 @@ Catch up [Pulsar client feature matrix][5], current working on:
 [3]: https://github.com/Envek/after_commit_everywhere "after commit everywhere"
 [4]: https://github.com/apache/pulsar/wiki/PIP-22:-Pulsar-Dead-Letter-Topic "PIP 22: Pulsar Dead Letter Topic"
 [5]: https://github.com/apache/pulsar/wiki/Client-Features-Matrix "Pulsar client feature matrix"
+[6]: https://pulsar.apache.org/docs/en/concepts-messaging/#key_shared "consumer key_shared mode"

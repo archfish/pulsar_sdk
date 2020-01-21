@@ -9,7 +9,7 @@ module PulsarSdk
 
         @topic = opts.topic
 
-        @listen_wait = @opts.listen_wait
+        @listen_wait = opts.listen_wait
 
         @message_tracker = ::PulsarSdk::Consumer::MessageTracker.new(opts.redelivery_delay)
 
@@ -86,7 +86,7 @@ module PulsarSdk
           PulsarSdk.logger.debug("#{__method__}:pattern topic"){opts.topics_pattern}
 
           tn = ::PulsarSdk::Protocol::Topic.parse(opts.topics_pattern)
-          pattern = Regexp.compile(tn.topic)
+          pattern = Regexp.compile(tn.topic == '*' ? '^*' : tn.topic)
           client.namespace_topics(tn.namespace).each do |topic|
             topics << topic if pattern.match(topic)
           end

@@ -31,6 +31,7 @@ module PulsarSdk
 
       private
       def json_encode!
+        PulsarSdk.logger.info("#{self.class}::#{__method__}"){"message was 「#{@message.class}」 now encode to json!"}
         @message = @message.respond_to?(:to_json) ? @message.to_json : JSON.dump(@message)
         @metadata.properties << Pulsar::Proto::KeyValue.new(key: 'Content-Type', value: 'application/json; charset=utf-8')
       end
