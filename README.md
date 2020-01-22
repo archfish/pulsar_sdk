@@ -77,6 +77,12 @@ mv ${PB_PATH}PulsarMarkers_pb.rb ${PB_PATH}pulsar_markers.pb.rb
 - [ ] Schema
   - [ ] Get
   - [ ] Create
+- [ ] Admin API
+  - [x] Create Namespace
+  - [x] List Namespace Topics
+  - [x] Create Topic
+  - [x] Delete Topic
+  - [x] Peek Messages
 
 ## WIP
 
