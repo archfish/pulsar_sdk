@@ -3,6 +3,9 @@ require 'pulsar_admin'
 # default is persistent operates
 api = PulsarAdmin.create_client(endpoint: 'http://pulsar.reocar.lan', tenant: 'rental_car')
 
+# List namespace in current tenant
+api.list_namespaces
+
 # Create namespace
 api.create_namespace('test-ns-1')
 

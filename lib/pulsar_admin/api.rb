@@ -14,6 +14,10 @@ module PulsarAdmin
       @persistent = opts[:persistent] == false ? 'non-persistent' : 'persistent'
     end
 
+    def list_namespaces
+      get('/admin/v2/namespaces/:tenant')
+    end
+
     def create_namespace(name)
       put('/admin/v2/namespaces/:tenant/:namespace', namespace: name)
     end
@@ -22,7 +26,7 @@ module PulsarAdmin
       result = {}
       ['', '/partitioned'].flat_map do |pd|
         resp = get("/admin/v2/:persistent/:tenant/:namespace#{pd}", namespace: namespace)
-        result[pd.empty? ? 'non-partitioned' : 'partitioned'] = try_decode_body(resp)
+        result[pd.empty? ? 'non-partitioned' : 'partitioned'] = resp
       end
       result
     end
@@ -92,11 +96,13 @@ module PulsarAdmin
       uri.path, params = handle_restful_path(path, params)
 
       req = Net::HTTP::Get.new(uri)
-      req.set_form_data(params)
+      req.set_form_data(params) unless params.empty?
 
-      Net::HTTP.start(uri.hostname, uri.port) do |http|
+      resp = Net::HTTP.start(uri.hostname, uri.port) do |http|
         http.request(req)
       end
+
+      try_decode_body(resp)
     end
 
     def delete(path, payload = {})
