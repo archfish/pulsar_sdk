@@ -15,7 +15,9 @@ module PulsarAdmin
     end
 
     def list_namespaces
-      get('/admin/v2/namespaces/:tenant')
+      get('/admin/v2/namespaces/:tenant').map do |ns|
+        ns.sub("#{@tenant}/", '')
+      end
     end
 
     def create_namespace(name)
