@@ -9,6 +9,9 @@ api.list_namespaces
 # Create namespace
 api.create_namespace('test-ns-1')
 
+# Delete namespace
+api.delete_namespace('test-ns-1')
+
 # List topics in namespace `public`
 res = api.namespace_topics('public')
 

@@ -24,6 +24,10 @@ module PulsarAdmin
       put('/admin/v2/namespaces/:tenant/:namespace', namespace: name)
     end
 
+    def delete_namespace(name)
+      delete('/admin/v2/namespaces/:tenant/:namespace', namespace: name)
+    end
+
     def namespace_topics(namespace)
       result = {}
       ['', '/partitioned'].flat_map do |pd|
@@ -74,7 +78,7 @@ module PulsarAdmin
 
       if payload.empty?
         req.body = body.to_s
-        req.content_type = 'text/plain'
+        req.content_type = body.nil? ? 'application/json' : 'text/plain'
       else
         req.body = payload.to_json
         req.content_type = 'application/json'
