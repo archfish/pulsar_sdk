@@ -26,7 +26,7 @@ module PulsarSdk
 
       def namespace_topics(namespace)
         @namespace_service ||= ::PulsarSdk::Protocol::Namespace.new(self)
-        namespace_service.topics(namespace)
+        @namespace_service.topics(namespace)
       end
 
       def partition_topics(topic)
