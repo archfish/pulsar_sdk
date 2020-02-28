@@ -62,8 +62,8 @@ module PulsarAdmin
     #   message_position
     #   count
     def peek_messages(options)
-      opts = options.dup
-      (opts[:count] || 1).times.map do |x|
+      (options[:count] || 1).times.map do |x|
+        opts = options.dup
         opts[:message_position] = (opts[:message_position].to_i + x + 1).to_s
         peek_message(opts)
       end.compact
@@ -97,17 +97,20 @@ module PulsarAdmin
       end
     end
 
-    def get(path, params = {})
+    def raw_get(path, params = {})
       uri = @endpoint.dup
       uri.path, params = handle_restful_path(path, params)
 
       req = Net::HTTP::Get.new(uri)
       req.set_form_data(params) unless params.empty?
 
-      resp = Net::HTTP.start(uri.hostname, uri.port) do |http|
+      Net::HTTP.start(uri.hostname, uri.port) do |http|
         http.request(req)
       end
+    end
 
+    def get(path, params = {})
+      resp = raw_get(path, params)
       try_decode_body(resp)
     end
 
@@ -138,7 +141,7 @@ module PulsarAdmin
     #   message_position
     def peek_message(options)
       options[:message_position] = options[:message_position].to_s
-      resp = get('/admin/v2/:persistent/:tenant/:namespace/:topic/subscription/:sub_name/position/:message_position', options)
+      resp = raw_get('/admin/v2/:persistent/:tenant/:namespace/:topic/subscription/:sub_name/position/:message_position', options)
       unless request_ok?(resp)
         puts resp.body
         return

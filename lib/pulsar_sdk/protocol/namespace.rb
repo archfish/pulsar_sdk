@@ -7,13 +7,15 @@ module PulsarSdk
 
       def topics(namespace)
         base_cmd = Pulsar::Proto::BaseCommand.new(
-          type: Pulsar::Proto::BaseCommand::Type::GET_TOPICS_OF_NAMESPACE_RESPONSE,
-          lookupTopic: Pulsar::Proto::CommandGetTopicsOfNamespace.new(
+          type: Pulsar::Proto::BaseCommand::Type::GET_TOPICS_OF_NAMESPACE,
+          getTopicsOfNamespace: Pulsar::Proto::CommandGetTopicsOfNamespace.new(
             namespace: namespace,
-            mode: false
+            mode: Pulsar::Proto::CommandGetTopicsOfNamespace::Mode.resolve(:ALL)
           )
         )
-        @client.request_any_broker(base_cmd)&.topics
+        resp = @client.request_any_broker(base_cmd)
+
+        resp.getTopicsOfNamespaceResponse&.topics
       end
     end
   end
