@@ -1,5 +1,6 @@
 require 'logger'
 require 'json'
+require 'uri'
 require 'protobuf/validate'
 require 'protobuf/pulsar_api.pb'
 require "pulsar_sdk/version"
