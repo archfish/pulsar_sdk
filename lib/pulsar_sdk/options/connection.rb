@@ -13,7 +13,7 @@ module PulsarSdk
       [:logical_addr, :physical_addr].each do |x|
         define_method "#{x}=" do |v|
           return instance_variable_set("@#{x}", v) if v.nil?
-          v = v.is_a?(URI) ? v : URI.parse(v)
+          v = v.is_a?(::URI) ? v : ::URI.parse(v)
           v.port = DEFAULT_PORT if v.port.nil?
           instance_variable_set("@#{x}", v)
         end
