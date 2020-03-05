@@ -8,6 +8,8 @@ See `examples`.
 
 ## Dev
 
+I am using Ruby 2.4 develop this gem, if not work with other Ruby version, PR is welcome.
+
 ```shell
 #!/bin/sh
 
@@ -39,6 +41,10 @@ rm -f ${PB_PATH}${PB_OUT_F}.pbbak
 protoc -I ${PULSAR_GIT}/pulsar-common/src/main/proto/ --ruby_out ${PB_PATH} PulsarMarkers.proto
 mv ${PB_PATH}PulsarMarkers_pb.rb ${PB_PATH}pulsar_markers.pb.rb
 ```
+
+## Dependency
+
+When macOS user install google-protobuf, there maybe a suffix with `universal-darwin` save to Gemfile.lock. Please use google-protobuf without `universal-darwin` suffix. See issuse #6 for detail. Thanks for wppurking's report!
 
 ## Features
 
@@ -79,6 +85,8 @@ mv ${PB_PATH}PulsarMarkers_pb.rb ${PB_PATH}pulsar_markers.pb.rb
   - [ ] Create
 - [ ] Admin API
   - [x] Create Namespace
+  - [x] List namespaces in current tenant
+  - [x] Destroy Namespace
   - [x] List Namespace Topics
   - [x] Create Topic
   - [x] Delete Topic
