@@ -257,9 +257,15 @@ module PulsarSdk
 
       def handle_message(cmd, payload)
         consumer_id = cmd.get_consumer_id
-        return if consumer_id.nil?
+        if consumer_id.nil?
+          ::PulsarSdk.logger.warn(__method__){"can not get consumer id from cmd: #{cmd.inspect}"}
+          return
+        end
         handler = consumer_handlers.find(consumer_id)
-        return if handler.nil?
+        if handler.nil?
+          ::PulsarSdk.logger.warn(__method__){"can not get consumer_handler from cmd: #{cmd.inspect}"}
+          return
+        end
         handler.call(cmd, payload)
       end
 

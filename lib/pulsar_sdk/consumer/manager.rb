@@ -42,7 +42,8 @@ module PulsarSdk
 
         loop do
           return if @stoped
-          @consumers.each(&:flow_if_need)
+
+          flow
 
           cmd, msg = receive(@listen_wait)
           return if msg.nil?
