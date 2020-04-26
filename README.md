@@ -68,6 +68,7 @@ When macOS user install google-protobuf, there maybe a suffix with `universal-da
   - [x] Listen
   - [x] Partitioned topics
   - [x] Topic with regexp (in same namespace)
+  - [x] Topic compaction
   - [ ] Reader
   - [ ] [Dead Letter Topic][4]
   - [ ] [Key Shared][6]

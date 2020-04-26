@@ -5,7 +5,7 @@ module PulsarSdk
 
       attr_reader :metadata, :message, :key
 
-      def initialize(msg, metadata = nil)
+      def initialize(msg, metadata = nil, key = nil)
         # TODO check metadata type
         @message, @metadata = msg, metadata
         @metadata ||= Pulsar::Proto::MessageMetadata.new
@@ -15,6 +15,8 @@ module PulsarSdk
 
         publish_time = @metadata.publish_time
         @metadata.publish_time = publish_time.zero? ? TimeX.now.timestamp : publish_time
+
+        self.key = key
       end
 
       def producer_name=(v)
@@ -27,6 +29,11 @@ module PulsarSdk
 
       def binary_string
         @message.bytes.pack('C*')
+      end
+
+      def key=(v, b64 = false)
+        @metadata.partition_key = v
+        @metadata.partition_key_b64_encoded = b64
       end
 
       private

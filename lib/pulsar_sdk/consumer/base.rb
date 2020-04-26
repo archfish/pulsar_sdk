@@ -113,7 +113,8 @@ module PulsarSdk
             subscription: @opts.subscription_name,
             subType: @opts.subscription_type,
             consumer_name: @consumer_name,
-            replicate_subscription_state: @opts.replicate_subscription_state
+            replicate_subscription_state: @opts.replicate_subscription_state,
+            read_compacted: @opts.read_compacted
           )
         )
         result = execute(base_cmd)
