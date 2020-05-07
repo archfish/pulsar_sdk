@@ -32,7 +32,7 @@ module PulsarSdk
       end
 
       def key=(v, b64 = false)
-        @metadata.partition_key = v
+        @metadata.partition_key = v.to_s
         @metadata.partition_key_b64_encoded = b64
       end
 
