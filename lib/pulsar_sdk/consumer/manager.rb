@@ -20,25 +20,30 @@ module PulsarSdk
 
       # NOTE some topic maybe have large permits if there is no message
       def flow
+        ensure_connection
         @consumers.each(&:flow_if_need)
       end
 
       # NOTE all consumers has same name
       def subscription
+        ensure_connection
         @consumers.find(&:subscription)
       end
 
       def unsubscribe
+        ensure_connection
         @consumers.each(&:unsubscribe)
       end
 
       # if timeout is nil wait until get message
       def receive(timeout = nil)
+        ensure_connection
         @message_tracker.shift(timeout)
       end
 
       def listen(autoack = false)
         raise 'listen require passing a block!!' if !block_given?
+        ensure_connection
 
         loop do
           return if @stoped
@@ -108,6 +113,13 @@ module PulsarSdk
               consumer.grab_cnx
             end
           end
+        end
+      end
+
+      def ensure_connection
+        @consumers.each do |consumer|
+          next unless consumer.disconnect?
+          consumer.grab_cnx
         end
       end
     end

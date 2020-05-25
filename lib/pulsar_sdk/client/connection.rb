@@ -43,11 +43,10 @@ module PulsarSdk
 
       def close
         @state.closed!
-        Timeout::timeout(2) {@pong&.join} rescue @pong&.kill
-        @pong&.join
-
         consumer_handlers.each{|_k, v| v.call}
         producer_handlers.each{|_k, v| v.call}
+        Timeout::timeout(2) {@pong&.join} rescue @pong&.kill
+        @pong&.join
       ensure
         @socket.close
       end
@@ -119,6 +118,7 @@ module PulsarSdk
             end
           end
         end
+        @pong.abort_on_exception = false
 
         true
       end

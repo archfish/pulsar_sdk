@@ -53,13 +53,17 @@ module PulsarSdk
           type: Pulsar::Proto::BaseCommand::Type::CLOSE_PRODUCER,
           close_producer: Pulsar::Proto::CommandCloseProducer.new
         )
-        execute(base_cmd) if @established
+        execute(base_cmd) unless disconnect?
 
         unbind_handler!
 
         @stoped = true
 
         @receipt_queue.close
+      end
+
+      def disconnect?
+        !@established
       end
 
       private
@@ -81,7 +85,7 @@ module PulsarSdk
           raise "msg expected a PulsarSdk::Producer::Message got #{msg.class}"
         end
 
-        grab_cnx unless @established
+        grab_cnx if disconnect?
 
         cmd.seq_generator = @seq_generator
 

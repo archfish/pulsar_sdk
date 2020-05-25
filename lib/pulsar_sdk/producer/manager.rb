@@ -29,6 +29,8 @@ module PulsarSdk
           return
         end
 
+        ensure_connection
+
         route_index = msg.nil? ? 0 : @router.route(msg.key, @producers.size)
 
         yield @producers[route_index]
@@ -48,6 +50,16 @@ module PulsarSdk
           PulsarSdk::Producer::Base.new(client, opts).tap do |base|
             base.grab_cnx
           end
+        end
+      end
+
+      def ensure_connection
+        @producers.each do |producer|
+          next unless producer.disconnect?
+          PulsarSdk.logger.warn('PulsarSdk::Producer::Manager#ensure_connection'){
+            "connection closed! reconnect now! #{producer.inspect}"
+          }
+          producer.grab_cnx
         end
       end
     end

@@ -69,9 +69,13 @@ module PulsarSdk
             consumer_id: @consumer_id
           )
         )
-        execute(base_cmd) if @established
+        execute(base_cmd) unless disconnect?
 
         remove_handler!
+      end
+
+      def disconnect?
+        !@established
       end
 
       def execute(cmd)
@@ -84,7 +88,7 @@ module PulsarSdk
 
       private
       def write(cmd, *args)
-        grab_cnx unless @established
+        grab_cnx if disconnect?
         cmd.seq_generator = @seq_generator
 
         @conn.request(cmd, *args)
