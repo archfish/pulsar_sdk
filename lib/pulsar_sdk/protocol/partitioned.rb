@@ -17,7 +17,8 @@ module PulsarSdk
         return [@tn.to_s] if pmr.partitions.zero?
 
         tn = @tn.dup
-        (0..pmr.partitions).map do |i|
+        # 修复分区索引范围，使用 ... 而不是 ..
+        (0...pmr.partitions).map do |i|
           tn.partition = i
           tn.to_s
         end
