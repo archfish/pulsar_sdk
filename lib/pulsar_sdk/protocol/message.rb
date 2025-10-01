@@ -19,6 +19,17 @@ module PulsarSdk
         end
       end
 
+      # 辅助方法：判断消息是否需要JSON反序列化
+      def json_encoded?
+        # 检查properties中是否有标记为JSON的内容类型
+        self.properties.each do |prop|
+          if prop.key == 'Content-Type' && prop.value.include?('application/json')
+            return true
+          end
+        end
+        false
+      end
+
       # 异步确认消息（原有方法保持不变）
       def ack(type = Pulsar::Proto::CommandAck::AckType::Individual)
         base_cmd = Pulsar::Proto::BaseCommand.new(
