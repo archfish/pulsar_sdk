@@ -21,9 +21,21 @@ module PulsarSdk
 
         mn_bytes = read_magic_number
         if mn_bytes == MAGIC_NUMBER
-          _checksum = read_checksum
-          # TODO 可能需要校验一下，防止错误消息
+          checksum_bytes = read_checksum
           metadata = read_metadata
+          payload = read_remaining || ""
+
+          # 校验和验证
+          meta_payload = [@buff[@readed - (metadata.to_proto.size + payload.size + METADATA_SIZE_LEN)..-1]].pack('a*')
+          calculated_checksum = calculate_checksum(meta_payload)
+          expected_checksum = checksum_bytes.unpack('N').first
+
+          if calculated_checksum != expected_checksum
+            raise Pulsar::Proto::CommandError.new(
+              error: Pulsar::Proto::ServerError::ChecksumError,
+              message: "Checksum mismatch: expected #{expected_checksum}, got #{calculated_checksum}"
+            )
+          end
         else
           rewind(MAGIC_NUMBER_LEN)
           metadata = read_metadata
@@ -80,6 +92,13 @@ module PulsarSdk
       end
 
       private
+
+      def calculate_checksum(bytes)
+        crc = Digest::CRC32c.new
+        crc << bytes
+        crc.checksum
+      end
+
       def read(size, unpack = nil)
         bytes = @buff[@readed..(@readed + size - 1)]
         @readed += size

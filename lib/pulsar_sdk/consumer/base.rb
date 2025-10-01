@@ -78,8 +78,8 @@ module PulsarSdk
         !@established
       end
 
-      def execute(cmd)
-        write(cmd)
+      def execute(cmd, timeout = nil)
+        write(cmd, timeout)
       end
 
       def execute_async(cmd)
@@ -87,11 +87,11 @@ module PulsarSdk
       end
 
       private
-      def write(cmd, *args)
+      def write(cmd, timeout = nil, async = false)
         grab_cnx if disconnect?
         cmd.seq_generator = @seq_generator
 
-        @conn.request(cmd, *args)
+        @conn.request(cmd, nil, async, timeout)
       end
 
       def bind_handler!

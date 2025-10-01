@@ -79,7 +79,7 @@ When macOS user install google-protobuf, there maybe a suffix with `universal-da
   - [x] Topic lookup
 - [x] Log Optimization
 - [x] Connection pool
-- [ ] Unit Test
+- [x] Unit Test
 - [x] Thread safe
 - [ ] Schema
   - [ ] Get
@@ -92,6 +92,64 @@ When macOS user install google-protobuf, there maybe a suffix with `universal-da
   - [x] Create Topic
   - [x] Delete Topic
   - [x] Peek Messages
+
+## Improvements
+
+### Message Tracker Enhancements
+
+The Message Tracker has been enhanced with a new `AckHandler` class that provides both asynchronous and synchronous message acknowledgment capabilities:
+
+- **Asynchronous Acknowledgment**: The original `call` method for asynchronous message acknowledgment
+- **Synchronous Acknowledgment**: The new `call_sync` method for synchronous message acknowledgment with timeout support
+
+Example usage:
+```ruby
+# Asynchronous acknowledgment (original behavior)
+message.ack_handler.call(cmd)
+
+# Synchronous acknowledgment with default timeout (5 seconds)
+message.ack_handler.call_sync(cmd)
+
+# Synchronous acknowledgment with custom timeout
+message.ack_handler.call_sync(cmd, 10)  # 10 seconds timeout
+```
+
+### Message Serialization Differences
+
+Please note that there are differences in message serialization between this Ruby client and the official Pulsar clients:
+
+1. **Automatic JSON Serialization**: The Ruby client automatically serializes Hash and Array objects to JSON format, and adds a `Content-Type: application/json` property to the message metadata.
+
+2. **String Handling**: String messages are automatically marked with `Content-Type: text/plain` in the metadata.
+
+3. **Other Objects**: Other Ruby objects are converted to JSON if they respond to `to_json`, otherwise they are converted to strings.
+
+Example:
+```ruby
+# Hash is automatically serialized to JSON
+producer.send_message({name: "John", age: 30})
+
+# Array is automatically serialized to JSON
+producer.send_message([1, 2, 3, 4])
+
+# String gets Content-Type text/plain
+producer.send_message("Hello World")
+
+# Custom objects are serialized to JSON if possible
+class Person
+  def initialize(name, age)
+    @name, @age = name, age
+  end
+
+  def to_json(*args)
+    {name: @name, age: @age}.to_json
+  end
+end
+
+producer.send_message(Person.new("John", 30))
+```
+
+When migrating from other Pulsar clients or working in a mixed environment, please verify that your message handling is compatible with these automatic serialization features.
 
 ## WIP
 

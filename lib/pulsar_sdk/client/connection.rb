@@ -219,7 +219,13 @@ module PulsarSdk
           handle_response(cmd)
 
         when cmd.typeof_error?
-          PulsarSdk.logger.error(__method__){"#{cmd.error}: #{cmd.message}"}
+          # 特别处理校验和错误
+          if cmd.error == Pulsar::Proto::ServerError::ChecksumError
+            PulsarSdk.logger.error(__method__){"Checksum error: #{cmd.message}"}
+            # 可以在这里添加特定的处理逻辑，比如重新连接或通知上层应用
+          else
+            PulsarSdk.logger.error(__method__){"#{cmd.error}: #{cmd.message}"}
+          end
 
         when cmd.typeof_close_producer?
           producer_id = cmd.close_producer.producer_id

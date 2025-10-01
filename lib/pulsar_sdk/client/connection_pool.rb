@@ -30,7 +30,7 @@ module PulsarSdk
           conn = @pool.find(id)
 
           if conn.nil? || conn.closed?
-            # REMOVE closed conncetion from pool
+            # REMOVE closed connection from pool
             @pool.delete(id, 0.01) unless conn.nil?
 
             opts = @options.dup
@@ -50,18 +50,42 @@ module PulsarSdk
         Thread.new do
           loop do
             begin
-              @pool.each do |_k, v|
-                last_ping_at, last_received_at = v.active_status
+              # 使用临时数组避免在迭代过程中修改池
+              connections_to_check = []
+              @pool.each do |k, v|
+                connections_to_check << [k, v]
+              end
 
-                case
-                when last_ping_at - last_received_at >= @keepalive * 2
-                  v.close
-                when last_ping_at - last_received_at > @keepalive
-                  v.ping
+              connections_to_check.each do |id, conn|
+                begin
+                  last_ping_at, last_received_at = conn.active_status
+
+                  case
+                  when last_ping_at - last_received_at >= @keepalive * 2
+                    PulsarSdk.logger.warn("ConnectionPool#run_checker") { "Closing stale connection: #{id}" }
+                    @mutex.synchronize do
+                      # 确保连接仍然在池中再删除
+                      if @pool.find(id) == conn
+                        @pool.delete(id, 0.01)
+                        conn.close
+                      end
+                    end
+                  when last_ping_at - last_received_at > @keepalive
+                    conn.ping
+                  end
+                rescue => exp
+                  PulsarSdk.logger.error("ConnectionPool#run_checker") { "Error checking connection #{id}: #{exp}" }
+                  # 如果检查连接时出错，从池中移除该连接
+                  @mutex.synchronize do
+                    if @pool.find(id) == conn
+                      @pool.delete(id, 0.01)
+                      conn.close rescue nil
+                    end
+                  end
                 end
               end
             rescue => exp
-              PulsarSdk.logger.error(exp)
+              PulsarSdk.logger.error("ConnectionPool#run_checker") { "Error in connection checker loop: #{exp}" }
             end
 
             sleep(1)
@@ -70,8 +94,10 @@ module PulsarSdk
       end
 
       def close
-        @pool.clear do |_, v|
-          v.close
+        @mutex.synchronize do
+          @pool.clear do |_, v|
+            v.close rescue nil
+          end
         end
       end
     end

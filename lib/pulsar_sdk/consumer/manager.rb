@@ -46,30 +46,57 @@ module PulsarSdk
         ensure_connection
 
         loop do
-          return if @stoped
+          begin
+            # 检查是否应该停止监听
+            return if @stoped
 
-          flow
+            # 请求更多消息
+            flow
 
-          cmd, msg = receive(@listen_wait)
-          return if msg.nil?
+            # 接收消息
+            cmd, msg = receive(@listen_wait)
 
-          result = yield cmd, msg
+            # 处理超时情况 - 如果设置了等待时间但没有收到消息，继续循环
+            if msg.nil? && !@listen_wait.nil?
+              next
+            end
 
-          if autoack && result == false
-            msg.nack
-            next
+            # 如果没有设置等待时间且没有消息，或者消费者被停止，则退出
+            return if msg.nil? || @stoped
+
+            begin
+              result = yield cmd, msg
+            rescue => e
+              PulsarSdk.logger.error("Consumer::Manager#listen") { "Error in listen block: #{e}" }
+              # 即使处理消息时出错，也要继续监听
+              next
+            end
+
+            if autoack && result == false
+              msg.nack
+              next
+            end
+
+            msg.ack if autoack
+          rescue => e
+            PulsarSdk.logger.error("Consumer::Manager#listen") { "Error in listen loop: #{e}" }
+            # 在主循环中捕获异常，确保监听可以继续
+            # 可以选择短暂休眠以避免忙等待
+            sleep(0.1) rescue nil
+            # 确保连接有效
+            ensure_connection
           end
-
-          msg.ack if autoack
         end
       end
 
       def close
         PulsarSdk.logger.debug(__method__){"current @stoped #{@stoped} close now!"}
         return if @stoped
-        @consumers.each(&:close)
+
+        # 设置停止标志，使listen循环能够正常退出
         @stoped = true
 
+        @consumers.each(&:close)
         @message_tracker.close
       end
 
@@ -119,7 +146,16 @@ module PulsarSdk
       def ensure_connection
         @consumers.each do |consumer|
           next unless consumer.disconnect?
-          consumer.grab_cnx
+          PulsarSdk.logger.warn('PulsarSdk::Consumer::Manager#ensure_connection'){
+            "connection closed! reconnect now! #{consumer.inspect}"
+          }
+          begin
+            consumer.grab_cnx
+          rescue => e
+            PulsarSdk.logger.error('PulsarSdk::Consumer::Manager#ensure_connection') {
+              "Failed to reconnect consumer: #{e}"
+            }
+          end
         end
       end
     end
